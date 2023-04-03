@@ -1,0 +1,25 @@
+{
+  "template": "/home/runner/work/bevy-jam-3/bevy-jam-3",
+  "commit": "0d0847e41830884adfbd19fbe8ffe9ece97c1da6",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_name": "Pist Off",
+      "author_name": "Ian Chamberlain",
+      "author_email": "ian-h-chamberlain@users.noreply.github.com",
+      "crate_name": "pist-off",
+      "osx_short_name": "pistoff",
+      "osx_bundle_id": "com.example.pistoff",
+      "_copy_without_render": [
+        "assets/*",
+        ".github/workflows/ci.yml",
+        ".github/workflows/deploy-page.yml"
+      ],
+      "_extensions": [
+        "cookiecutter.extensions.SlugifyExtension"
+      ],
+      "_template": "/home/runner/work/bevy-jam-3/bevy-jam-3"
+    }
+  },
+  "directory": null
+}
