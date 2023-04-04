@@ -1,6 +1,6 @@
 {
-  "template": "/home/runner/work/bevy-jam-3/bevy-jam-3",
-  "commit": "0d0847e41830884adfbd19fbe8ffe9ece97c1da6",
+  "template": "https://github.com/ian-h-chamberlain/bevy_cookiecutter",
+  "commit": "2f131cbb1294dbcff6b64ba85d8f1172b1fb3a75",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -18,7 +18,7 @@
       "_extensions": [
         "cookiecutter.extensions.SlugifyExtension"
       ],
-      "_template": "/home/runner/work/bevy-jam-3/bevy-jam-3"
+      "_template": "https://github.com/ian-h-chamberlain/bevy_cookiecutter"
     }
   },
   "directory": null
