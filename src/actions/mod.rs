@@ -18,20 +18,20 @@ impl Plugin for ActionsPlugin {
 
 #[derive(Default, Resource)]
 pub struct Actions {
-    pub player_movement: Option<Vec2>,
+    pub player_rotation: Option<Vec2>,
 }
 
 pub fn set_movement_actions(mut actions: ResMut<Actions>, keyboard_input: Res<Input<KeyCode>>) {
-    let player_movement = Vec2::new(
+    let player_rotation = Vec2::new(
         get_movement(GameControl::Right, &keyboard_input)
             - get_movement(GameControl::Left, &keyboard_input),
         get_movement(GameControl::Up, &keyboard_input)
             - get_movement(GameControl::Down, &keyboard_input),
     );
 
-    if player_movement != Vec2::ZERO {
-        actions.player_movement = Some(player_movement.normalize());
+    if player_rotation != Vec2::ZERO {
+        actions.player_rotation = Some(player_rotation.normalize());
     } else {
-        actions.player_movement = None;
+        actions.player_rotation = None;
     }
 }

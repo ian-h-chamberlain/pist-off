@@ -1,47 +1,70 @@
-use crate::actions::Actions;
-use crate::loading::TextureAssets;
-use crate::GameState;
+use std::f32::consts::TAU;
+
+use bevy::gltf::Gltf;
+use bevy::log;
 use bevy::prelude::*;
+use inline_tweak::tweak;
+
+use crate::actions::Actions;
+use crate::loading::GLTFAssets;
+use crate::GameState;
 
 pub struct PlayerPlugin;
 
 #[derive(Component)]
-pub struct Player;
+pub struct Cuby;
 
 /// This plugin handles player related stuff like movement
 /// Player logic is only active during the State `GameState::Playing`
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_player.in_schedule(OnEnter(GameState::Playing)))
-            .add_system(move_player.in_set(OnUpdate(GameState::Playing)));
+        app.add_system(spawn_cube.in_schedule(OnEnter(GameState::Playing)))
+            .add_system(rotate_cube.in_set(OnUpdate(GameState::Playing)));
     }
 }
 
-fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
+fn spawn_cube(mut commands: Commands, gltf_assets: Res<Assets<Gltf>>, gltf: Res<GLTFAssets>) {
+    let root = gltf_assets.get(&gltf.cuby).unwrap();
+
     commands
-        .spawn(SpriteBundle {
-            texture: textures.texture_bevy.clone(),
-            transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
-            ..Default::default()
+        .spawn(SceneBundle {
+            scene: root.named_scenes["Scene"].clone(),
+            ..default()
         })
-        .insert(Player);
+        .insert(Cuby);
+
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            intensity: 1500.0,
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::from_xyz(4.0, 8.0, 4.0),
+        ..default()
+    });
 }
 
-fn move_player(
+fn rotate_cube(
     time: Res<Time>,
     actions: Res<Actions>,
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut cube: Query<&mut Transform, With<Cuby>>,
+    camera: Query<&Transform, (With<Camera>, Without<Cuby>)>,
 ) {
-    if actions.player_movement.is_none() {
-        return;
-    }
-    let speed = 150.;
-    let movement = Vec3::new(
-        actions.player_movement.unwrap().x * speed * time.delta_seconds(),
-        actions.player_movement.unwrap().y * speed * time.delta_seconds(),
-        0.,
-    );
-    for mut player_transform in &mut player_query {
-        player_transform.translation += movement;
+    let Some(rotation) = actions.player_rotation else { return };
+
+    let speed = tweak!(0.4);
+
+    log::debug!("rotating cube by {:?}", rotation * speed);
+
+    let rpms = TAU * speed * time.delta_seconds();
+
+    for camera_transform in &camera {
+        let camera_y = camera_transform.local_y();
+        let camera_x = camera_transform.local_x();
+
+        for mut player_transform in &mut cube {
+            player_transform.rotate_axis(camera_y, rotation.x * rpms);
+            player_transform.rotate_axis(camera_x, rotation.y * rpms);
+        }
     }
 }
