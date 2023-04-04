@@ -3,10 +3,10 @@ use std::f32::consts::TAU;
 use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
-use inline_tweak::tweak;
 
 use crate::actions::Actions;
 use crate::loading::GLTFAssets;
+use crate::tweak;
 use crate::GameState;
 
 pub struct PlayerPlugin;
@@ -63,7 +63,9 @@ fn rotate_cube(
         let camera_x = camera_transform.local_x();
 
         for mut player_transform in &mut cube {
-            player_transform.rotate_axis(camera_y, rotation.x * rpms);
+            // TODO: option for inverting the arrow controls? Click+drag would
+            // be much easier at the end of the day
+            player_transform.rotate_axis(camera_y, -rotation.x * rpms);
             player_transform.rotate_axis(camera_x, rotation.y * rpms);
         }
     }

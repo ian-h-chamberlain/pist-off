@@ -37,6 +37,10 @@ rand = { version = "0.8.3" }
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.28", default-features = false }
 image = { version = "0.24", default-features = false }
+
+# inline_tweak uses std::time and probably wouldn't work on wasm anyway. Just
+# define the tweak macro as a transparent passthrough on wasm
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
 inline_tweak = "1.0.8"
 
 [build-dependencies]

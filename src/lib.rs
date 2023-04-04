@@ -1,6 +1,7 @@
 mod actions;
 mod audio;
 mod loading;
+mod macros;
 mod menu;
 mod player;
 
