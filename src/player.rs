@@ -4,7 +4,7 @@ use bevy::log;
 use bevy::prelude::*;
 
 use crate::actions::Actions;
-use crate::cube::CubeFrame;
+use crate::cubes::CubeFrame;
 use crate::tweak;
 use crate::GameState;
 

@@ -1,11 +1,8 @@
 use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
-use rand::rngs::StdRng;
-use rand::Rng;
 
 use crate::loading::GLTFAssets;
-use crate::tweak;
 use crate::GameState;
 
 pub struct CubePlugin;
@@ -23,7 +20,7 @@ impl Plugin for CubePlugin {
 #[derive(Component)]
 pub struct CubeFrame;
 
-/// The "holding box" of the cube.
+/// The interactable components of the cube.
 #[derive(Component)]
 pub struct Block;
 
@@ -105,7 +102,8 @@ fn spawn_cube(
                                 // TODO: reuse color materials maybe?
                                 material: materials.add(color.into()),
                                 transform: Transform::from_xyz(x_pos, y_pos, z_pos)
-                                    .with_scale(Vec3::splat(cube_scale)),
+                                    // slightly smaller than 100% in lieu of a proper border
+                                    .with_scale(Vec3::splat(0.95 * cube_scale)),
                                 ..default()
                             },
                         ));

@@ -1,6 +1,6 @@
 mod actions;
 mod audio;
-mod cube;
+mod cubes;
 mod loading;
 mod macros;
 mod menu;
@@ -8,7 +8,7 @@ mod player;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
-use crate::cube::CubePlugin;
+use crate::cubes::CubePlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
