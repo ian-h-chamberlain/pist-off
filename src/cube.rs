@@ -81,8 +81,10 @@ fn spawn_cube(
             ..default()
         })
         .with_children(|parent| {
-            let num_cubes_per_axis = 2_i16;
+            let num_cubes_per_axis = 1_i16;
             let cube_scale = 1.0 / f32::from(num_cubes_per_axis);
+
+            let mut color_idx: usize = rand::random();
 
             for i in gen_combinations(num_cubes_per_axis) {
                 for j in gen_combinations(num_cubes_per_axis) {
@@ -91,7 +93,8 @@ fn spawn_cube(
                         let y_pos = j * cube_scale;
                         let z_pos = k * cube_scale;
 
-                        let color: Color = ALL_COLORS[rand::random::<usize>() % ALL_COLORS.len()];
+                        let color: Color = ALL_COLORS[color_idx % ALL_COLORS.len()];
+                        color_idx += 1;
 
                         log::debug!("spawning at {:?}", (x_pos, y_pos, z_pos));
 

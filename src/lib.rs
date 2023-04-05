@@ -47,7 +47,9 @@ impl Plugin for GamePlugin {
         #[cfg(debug_assertions)]
         {
             app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-                .add_plugin(LogDiagnosticsPlugin::default());
+                .add_plugin(LogDiagnosticsPlugin::default())
+                // TODO: pause and/or quit menu
+                .add_system(bevy::window::close_on_esc);
         }
     }
 }
