@@ -1,43 +1,25 @@
 use std::f32::consts::TAU;
 
-use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
 
 use crate::actions::Actions;
-use crate::loading::GLTFAssets;
+use crate::cube::CubeFrame;
 use crate::tweak;
 use crate::GameState;
 
-pub struct PlayerPlugin;
-
-#[derive(Component)]
-pub struct Cuby;
-
 /// This plugin handles player related stuff like movement
 /// Player logic is only active during the State `GameState::Playing`
+pub struct PlayerPlugin;
+
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_scene.in_schedule(OnEnter(GameState::Playing)))
-            .add_system(rotate_cube.in_set(OnUpdate(GameState::Playing)));
+        app.add_system(spawn_light.in_schedule(OnEnter(GameState::Playing)))
+            .add_system(rotate_camera.in_set(OnUpdate(GameState::Playing)));
     }
 }
 
-fn spawn_scene(
-    mut commands: Commands,
-    camera: Query<(Entity, &Transform), With<Camera3d>>,
-    gltf_assets: Res<Assets<Gltf>>,
-    gltf: Res<GLTFAssets>,
-) {
-    let root = gltf_assets.get(&gltf.cuby).unwrap();
-
-    commands
-        .spawn(SceneBundle {
-            scene: root.named_scenes["Scene"].clone(),
-            ..default()
-        })
-        .insert(Cuby);
-
+fn spawn_light(mut commands: Commands, camera: Query<(Entity, &Transform), With<Camera3d>>) {
     for (camera, camera_transform) in &camera {
         commands
             .entity(camera)
@@ -63,11 +45,11 @@ fn spawn_scene(
     }
 }
 
-fn rotate_cube(
+fn rotate_camera(
     time: Res<Time>,
     actions: Res<Actions>,
-    cube: Query<&Transform, With<Cuby>>,
-    mut camera: Query<&mut Transform, (With<Camera>, Without<Cuby>)>,
+    cube: Query<&Transform, With<CubeFrame>>,
+    mut camera: Query<&mut Transform, (With<Camera>, Without<CubeFrame>)>,
 ) {
     let Some(rotation) = actions.player_rotation else { return };
 
