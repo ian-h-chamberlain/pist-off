@@ -1,6 +1,7 @@
 use crate::loading::FontAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy_mod_picking::PickingCameraBundle;
 
 pub struct MenuPlugin;
 
@@ -35,15 +36,17 @@ fn setup_menu(
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        camera: Camera {
-            order: -10,
-            is_active: true,
+    commands
+        .spawn(Camera3dBundle {
+            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            camera: Camera {
+                order: -10,
+                is_active: true,
+                ..default()
+            },
             ..default()
-        },
-        ..default()
-    });
+        })
+        .insert(PickingCameraBundle::default());
 
     commands
         .spawn(ButtonBundle {

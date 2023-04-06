@@ -27,7 +27,7 @@ fn spawn_light(mut commands: Commands, camera: Query<(Entity, &Transform), With<
             .insert(VisibilityBundle::default())
             .with_children(|parent| {
                 // For a point light we don't care about scale/rotation
-                let translation = Vec3::new(4.0, 8.0, 4.0) - camera_transform.translation;
+                let translation = Vec3::new(3.0, 4.0, 7.0) - camera_transform.translation;
 
                 // Add the point light as a child of the camera, to give the illusion
                 // we are rotating the cube relative to the scene, but actually we're

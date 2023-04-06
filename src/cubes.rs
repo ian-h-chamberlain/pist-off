@@ -1,18 +1,22 @@
+mod highlight;
+
 use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
+use bevy_mod_outline::{OutlineBundle, OutlineStencil, OutlineStencilBundle, OutlineVolume};
 
+use crate::cubes::highlight::HighlightableBundle;
 use crate::loading::GLTFAssets;
 use crate::GameState;
+
+use highlight::HighlightPlugin;
 
 pub struct CubePlugin;
 
 impl Plugin for CubePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
-            spawn_cube.in_schedule(OnEnter(GameState::Playing)),
-            // .in_base_set(CoreSet::PreUpdate),
-        );
+        app.add_plugin(HighlightPlugin)
+            .add_system(spawn_cube.in_schedule(OnEnter(GameState::Playing)));
     }
 }
 
@@ -26,11 +30,8 @@ pub struct Block;
 
 const ALL_COLORS: &[Color] = &[
     Color::ALICE_BLUE,
-    Color::ANTIQUE_WHITE,
     Color::AQUAMARINE,
     Color::AZURE,
-    Color::BEIGE,
-    Color::BISQUE,
     Color::BLUE,
     Color::CRIMSON,
     Color::CYAN,
@@ -49,9 +50,7 @@ const ALL_COLORS: &[Color] = &[
     Color::PINK,
     Color::PURPLE,
     Color::RED,
-    Color::SALMON,
     Color::SEA_GREEN,
-    Color::SILVER,
     Color::TEAL,
     Color::TOMATO,
     Color::TURQUOISE,
@@ -106,6 +105,7 @@ fn spawn_cube(
                                     .with_scale(Vec3::splat(0.95 * cube_scale)),
                                 ..default()
                             },
+                            HighlightableBundle::default(),
                         ));
                     }
                 }
@@ -120,6 +120,8 @@ fn spawn_cube(
                 scene: root.named_scenes["Scene"].clone(),
                 ..default()
             },
+            // TODO: it might look better to keep the outlines from rendering "above" the frame,
+            // but I haven't figured out how to do it with bevy_mod_outline yet
         ))
         .add_child(middleman);
 }

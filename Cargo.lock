@@ -641,6 +641,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_mod_outline"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd68f243f1bf93317dc126ef3a7ffe0fb00ba8cd17306a726eeb0d92986edb66"
+dependencies = [
+ "bevy",
+ "bitfield",
+ "interpolation",
+ "thiserror",
+]
+
+[[package]]
+name = "bevy_mod_picking"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7aa3a4ab156dbab0b0f755531e5b92bb6bcef90d1b07b374c7f7c707e6940fc"
+dependencies = [
+ "bevy",
+ "bevy_mod_raycast",
+]
+
+[[package]]
+name = "bevy_mod_raycast"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc98a75743120396c8f3e3b47bfeb7f3d39248c46a625972005e51ca4d110a2a"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_pbr"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1004,6 +1035,12 @@ name = "bit-vec"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
+
+[[package]]
+name = "bitfield"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d7e60934ceec538daadb9d8432424ed043a904d8e0243f3c6446bce549a46ac"
 
 [[package]]
 name = "bitflags"
@@ -1771,6 +1808,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "interpolation"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3b7357d2bbc5ee92f8e899ab645233e43d21407573cceb37fed8bc3dede2c02"
+
+[[package]]
 name = "itoa"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2352,6 +2395,8 @@ dependencies = [
  "bevy",
  "bevy_asset_loader",
  "bevy_kira_audio",
+ "bevy_mod_outline",
+ "bevy_mod_picking",
  "embed-resource",
  "image",
  "inline_tweak",

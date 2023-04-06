@@ -58,6 +58,8 @@ bevy = { version = "0.10", default-features = false }
 bevy_kira_audio = { version = "0.15" }
 bevy_asset_loader = { version = "0.15" }
 rand = { version = "0.8.3" }
+bevy_mod_picking = "0.12.0"
+bevy_mod_outline = "0.4.0"
 
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.28", default-features = false }
