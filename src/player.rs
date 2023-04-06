@@ -55,14 +55,14 @@ fn rotate_camera(
 
     let speed = tweak!(0.4);
 
-    log::debug!("rotating camera by {:?}", rotation * speed);
+    log::trace!("rotating camera by {:?}", rotation * speed);
 
     let rpms = TAU * speed * time.delta_seconds();
 
     for cube_transform in &cube {
         for mut camera_transform in &mut camera {
             // TODO: option for inverting the arrow controls? Click+drag would
-            // be much easier at the end of the day
+            // be much easier at the end of the day but trickier to implement
             let rotation = Quat::from_axis_angle(camera_transform.local_y(), -rotation.x * rpms)
                 * Quat::from_axis_angle(camera_transform.local_x(), rotation.y * rpms);
 

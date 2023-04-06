@@ -14,11 +14,10 @@ use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
 
 use bevy::app::App;
+use bevy::prelude::*;
+
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use bevy::prelude::*;
-use bevy_mod_outline::OutlinePlugin;
-use bevy_mod_picking::{CustomHighlightPlugin, DefaultPickingPlugins};
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -50,7 +49,7 @@ impl Plugin for GamePlugin {
         {
             app.add_plugin(FrameTimeDiagnosticsPlugin::default())
                 .add_plugin(LogDiagnosticsPlugin::default())
-                // TODO: pause and/or quit menu
+                // TODO: pause and/or proper quit menu
                 .add_system(bevy::window::close_on_esc);
         }
     }

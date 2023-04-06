@@ -4,8 +4,11 @@ use bevy_mod_outline::{
     AutoGenerateOutlineNormalsPlugin, OutlineBundle, OutlinePlugin, OutlineStencil, OutlineVolume,
 };
 use bevy_mod_picking::{
-    CustomHighlightPlugin, DefaultHighlighting, DefaultPickingPlugins, PickableBundle,
+    CustomHighlightPlugin, DefaultHighlighting,
+    PickableBundle,
 };
+
+use crate::GameState;
 
 pub struct HighlightPlugin;
 
@@ -20,13 +23,6 @@ pub enum Highlight {
 impl Plugin for HighlightPlugin {
     fn build(&self, app: &mut App) {
         app.add_asset::<Highlight>()
-            .add_plugins(
-                DefaultPickingPlugins
-                    .build()
-                    // disable the default material based highlighting
-                    .disable::<CustomHighlightPlugin<StandardMaterial>>()
-                    .disable::<CustomHighlightPlugin<ColorMaterial>>(),
-            )
             .add_plugin(CustomHighlightPlugin::<Highlight> {
                 highlighting_default: |mut assets| DefaultHighlighting {
                     hovered: assets.add(Highlight::Hovered),
@@ -36,7 +32,7 @@ impl Plugin for HighlightPlugin {
             })
             .add_plugin(AutoGenerateOutlineNormalsPlugin)
             .add_plugin(OutlinePlugin)
-            .add_system(set_highlighted_outlines);
+            .add_system(set_highlighted_outlines.in_set(OnUpdate(GameState::Playing)));
     }
 }
 
