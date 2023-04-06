@@ -14,8 +14,12 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_light.in_schedule(OnEnter(GameState::Playing)))
-            .add_system(rotate_camera.in_set(OnUpdate(GameState::Playing)));
+        app.insert_resource(AmbientLight {
+            color: Color::BEIGE,
+            brightness: 0.1,
+        })
+        .add_system(spawn_light.in_schedule(OnEnter(GameState::Playing)))
+        .add_system(rotate_camera.in_set(OnUpdate(GameState::Playing)));
     }
 }
 

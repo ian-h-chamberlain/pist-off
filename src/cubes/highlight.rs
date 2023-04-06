@@ -1,12 +1,11 @@
 use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
+use bevy::ui::FocusPolicy;
 use bevy_mod_outline::{
-    AutoGenerateOutlineNormalsPlugin, OutlineBundle, OutlinePlugin, OutlineStencil, OutlineVolume,
+    AutoGenerateOutlineNormalsPlugin, OutlineBundle, OutlinePlugin, OutlineStencil,
+    OutlineStencilBundle, OutlineVolume,
 };
-use bevy_mod_picking::{
-    CustomHighlightPlugin, DefaultHighlighting,
-    PickableBundle,
-};
+use bevy_mod_picking::{CustomHighlightPlugin, DefaultHighlighting, PickableBundle, PickableMesh};
 
 use crate::GameState;
 
@@ -59,6 +58,30 @@ impl Default for HighlightableBundle {
             },
             pickable: default(),
             highlight_type: default(),
+        }
+    }
+}
+
+#[derive(Bundle)]
+pub struct UnpickableBundle {
+    // TODO: it would be nice to keep the outlines from rendering "above" the GLTF
+    // frame, but I haven't figured out how to do it with bevy_mod_outline yet.
+    // OutlineBundle doesn't seem to be quite enough
+    pub outline: OutlineBundle,
+    // TODO: picking doesn't seem like it quite works for GLTF:
+    // https://github.com/aevyrie/bevy_mod_picking/issues/108
+    pub pickable_mesh: PickableMesh,
+    pub focus_policy: FocusPolicy,
+    pub interaction: Interaction,
+}
+
+impl Default for UnpickableBundle {
+    fn default() -> Self {
+        Self {
+            outline: default(),
+            pickable_mesh: default(),
+            interaction: default(),
+            focus_policy: FocusPolicy::Block,
         }
     }
 }

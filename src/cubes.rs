@@ -4,10 +4,12 @@ mod highlight;
 use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
-use bevy_mod_picking::{CustomHighlightPlugin, DefaultPickingPlugins};
+use bevy_mod_picking::{
+    CustomHighlightPlugin, DefaultPickingPlugins, PickableBundle, PickableMesh,
+};
 use rand::seq::SliceRandom;
 
-use crate::cubes::highlight::HighlightableBundle;
+use crate::cubes::highlight::{HighlightableBundle, UnpickableBundle};
 use crate::loading::GLTFAssets;
 use crate::GameState;
 
@@ -27,7 +29,12 @@ impl Plugin for CubePlugin {
         )
         .add_plugin(ActivatePlugin)
         .add_plugin(HighlightPlugin)
-        .add_system(spawn_cuby.in_schedule(OnEnter(GameState::Playing)));
+        .add_system(
+            spawn_cuby
+                .pipe(activation::prepare_animations)
+                .in_base_set(CoreSet::PreUpdate)
+                .in_schedule(OnEnter(GameState::Playing)),
+        );
     }
 }
 
@@ -42,12 +49,10 @@ pub struct Block {
     pub state: BlockState,
     /// Which way the block moves "forward" when it's out of place
     pub out_direction: Vec3,
-    /// This is the "in-place" position of the block.
-    pub original_translation: Vec3,
 }
 
 /// Whether a block is in its proper place or not.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum BlockState {
     OutOfPlace,
     InPosition,
@@ -105,10 +110,13 @@ fn spawn_cuby(
     gltf: Res<GLTFAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+) -> (Vec<Entity>, f32) {
     let root = gltf_assets.get(&gltf.cuby).unwrap();
 
     let cube = meshes.add(shape::Cube::default().into());
+
+    let mut blocks = Vec::new();
+    let mut block_scale = 0.0;
 
     // use a parent entity to make it simpler to scale down the inner cubes
     let middleman = commands
@@ -116,7 +124,9 @@ fn spawn_cuby(
             transform: Transform::from_scale(Vec3::splat(0.8)),
             ..default()
         })
-        .with_children(|parent| spawn_blocks(parent, cube, &mut materials))
+        .with_children(|parent| {
+            (blocks, block_scale) = spawn_blocks(parent, cube, &mut materials);
+        })
         .id();
 
     commands
@@ -126,17 +136,20 @@ fn spawn_cuby(
                 scene: root.named_scenes["Scene"].clone(),
                 ..default()
             },
-            // TODO: it might look better to keep the outlines from rendering "above" the frame,
-            // but I haven't figured out how to do it with bevy_mod_outline yet
+            UnpickableBundle::default(),
         ))
         .add_child(middleman);
+
+    (blocks, block_scale)
 }
 
 fn spawn_blocks(
     parent: &mut ChildBuilder,
     cube_mesh: Handle<Mesh>,
     materials: &mut Assets<StandardMaterial>,
-) {
+) -> (Vec<Entity>, f32) {
+    let mut ids = Vec::new();
+
     let num_cubes_per_axis = 2_i16;
 
     let cube_scale = 1.0 / f32::from(num_cubes_per_axis);
@@ -164,15 +177,11 @@ fn spawn_blocks(
                 let y_pos = (j_f - 0.5 * j_f.signum()) * cube_scale;
                 let z_pos = (k_f - 0.5 * k_f.signum()) * cube_scale;
 
-                let original_translation = Vec3::new(x_pos, y_pos, z_pos);
+                let translation = Vec3::new(x_pos, y_pos, z_pos);
 
                 let color: Color = ALL_COLORS[color_idx % ALL_COLORS.len()];
                 color_idx += 1;
 
-                // TODO: spawn "in-place" for any cubes that aren't on
-                // an outside edge (and make them unselectable, I guess?)
-                // this sort of works already, but disabling highlight and making them
-                // explicitly "fixed" probably makes more sense
                 let state = if axes.is_empty() {
                     BlockState::InPosition
                 } else {
@@ -182,32 +191,52 @@ fn spawn_blocks(
                 let out_direction = axes
                     .choose(&mut rand::thread_rng())
                     .copied()
-                    .unwrap_or_default();
+                    .unwrap_or(Vec3::Z);
+
+                // https://github.com/bevyengine/bevy/pull/7817
+                let up_direction = out_direction.any_orthonormal_vector();
 
                 let block = Block {
                     state,
                     out_direction,
-                    original_translation,
                 };
 
-                log::info!("spawning block {block:?} at {:?}", (x_pos, y_pos, z_pos));
+                let transform = Transform::from_translation(translation)
+                    .looking_to(out_direction, up_direction);
 
-                parent.spawn((
-                    block,
-                    MaterialMeshBundle {
-                        mesh: cube_mesh.clone(),
-                        // TODO: reuse color materials maybe?
-                        material: materials.add(color.into()),
-                        transform: Transform::from_translation(original_translation)
-                            // slightly smaller than 100% looks slightly nicer
-                            .with_scale(Vec3::splat(0.95 * cube_scale)),
-                        ..default()
-                    },
-                    HighlightableBundle::default(),
-                ));
+                log::info!("spawning block {block:?} at {transform:?}");
+
+                parent
+                    .spawn(
+                        // use an intermediate transform bundle so we keep the
+                        // "origin" the same but can still animate the block itself
+                        SpatialBundle {
+                            transform,
+                            ..default()
+                        },
+                    )
+                    .with_children(|parent| {
+                        let mut block_cmd = parent.spawn((MaterialMeshBundle {
+                            mesh: cube_mesh.clone(),
+                            // TODO: reuse color materials maybe?
+                            material: materials.add(color.into()),
+                            // slightly smaller than 100% looks a little nicer
+                            transform: Transform::from_scale(Vec3::splat(0.95 * cube_scale)),
+                            ..default()
+                        },));
+
+                        if axes.is_empty() {
+                            block_cmd.insert(UnpickableBundle::default());
+                        } else {
+                            block_cmd.insert((block, HighlightableBundle::default()));
+                            ids.push(block_cmd.id());
+                        }
+                    });
             }
         }
     }
+
+    (ids, cube_scale)
 }
 
 fn gen_combinations(cubes_per_axis: i16) -> impl Iterator<Item = i16> {
