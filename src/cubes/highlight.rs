@@ -2,8 +2,7 @@ use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
 use bevy::ui::FocusPolicy;
 use bevy_mod_outline::{
-    AutoGenerateOutlineNormalsPlugin, OutlineBundle, OutlinePlugin, OutlineStencil,
-    OutlineStencilBundle, OutlineVolume,
+    AutoGenerateOutlineNormalsPlugin, OutlineBundle, OutlinePlugin, OutlineStencil, OutlineVolume,
 };
 use bevy_mod_picking::{CustomHighlightPlugin, DefaultHighlighting, PickableBundle, PickableMesh};
 
