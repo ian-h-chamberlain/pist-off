@@ -47,7 +47,7 @@ pub fn prepare_animations(
     mut commands: Commands,
     mut animations: ResMut<Assets<AnimationClip>>,
     mut anim_clips: ResMut<AnimationClips>,
-) {
+) -> Vec<Entity> {
     log::info!("setting up animations for {} blocks", blocks.len());
 
     let block_name = Name::new("block");
@@ -82,7 +82,7 @@ pub fn prepare_animations(
 
     anim_clips.in_position = animations.add(clip);
 
-    for block in blocks {
+    for &block in &blocks {
         log::trace!("building animation for block {block:?}");
 
         let mut player = AnimationPlayer::default();
@@ -90,16 +90,18 @@ pub fn prepare_animations(
 
         commands.entity(block).insert((player, block_name.clone()));
     }
+
+    blocks
 }
 
 fn animate_toggled_blocks(
-    mut blocks: Query<(&mut AnimationPlayer, &Block, Ref<Block>), Changed<Block>>,
+    mut blocks: Query<(&mut AnimationPlayer, Ref<Block>), Changed<Block>>,
     clips: Res<AnimationClips>,
 ) {
     let anim_speed = tweak!(3.0);
 
-    for (mut player, block, block_info) in &mut blocks {
-        if block_info.is_added() {
+    for (mut player, block) in &mut blocks {
+        if block.is_added() {
             // just so we can tweak on the fly:
             player.set_speed(anim_speed);
 

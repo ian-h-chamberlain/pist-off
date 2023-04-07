@@ -1,4 +1,5 @@
 mod activation;
+mod graph;
 mod highlight;
 
 use bevy::gltf::Gltf;
@@ -12,6 +13,7 @@ use crate::loading::GLTFAssets;
 use crate::GameState;
 
 use self::activation::ActivatePlugin;
+use self::graph::GraphPlugin;
 use self::highlight::HighlightPlugin;
 
 pub struct CubePlugin;
@@ -26,10 +28,12 @@ impl Plugin for CubePlugin {
                 .disable::<CustomHighlightPlugin<ColorMaterial>>(),
         )
         .add_plugin(ActivatePlugin)
+        .add_plugin(GraphPlugin)
         .add_plugin(HighlightPlugin)
         .add_system(
             spawn_cuby
                 .pipe(activation::prepare_animations)
+                .pipe(graph::build_graph)
                 .in_base_set(CoreSet::PreUpdate)
                 .in_schedule(OnEnter(GameState::Playing)),
         );
