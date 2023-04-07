@@ -1,7 +1,7 @@
 use bevy::gltf::Gltf;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
-use bevy_kira_audio::AudioSource;
+
 
 use crate::GameState;
 
@@ -32,10 +32,7 @@ pub struct FontAssets {
 }
 
 #[derive(AssetCollection, Resource)]
-pub struct AudioAssets {
-    #[asset(path = "audio/flying.ogg")]
-    pub flying: Handle<AudioSource>,
-}
+pub struct AudioAssets {}
 
 #[derive(AssetCollection, Resource)]
 pub struct TextureAssets {}
