@@ -8,6 +8,9 @@ use bevy_mod_picking::{CustomHighlightPlugin, DefaultHighlighting, PickableBundl
 
 use crate::GameState;
 
+use super::activation::ToggleTimer;
+use super::{Block, BlockState};
+
 pub struct HighlightPlugin;
 
 #[derive(Debug, TypeUuid)]
@@ -91,16 +94,25 @@ impl Default for UnpickableBundle {
 
 fn set_highlighted_outlines(
     assets: Res<Assets<Highlight>>,
-    mut outlinables: Query<(&Handle<Highlight>, &mut OutlineVolume)>,
+    mut outlinables: Query<(&Handle<Highlight>, &mut OutlineVolume, &Block, &ToggleTimer)>,
 ) {
-    for (highlight, mut outline) in &mut outlinables {
+    for (highlight, mut outline, block, timer) in &mut outlinables {
         match assets.get(highlight) {
+            Some(Highlight::Selected | Highlight::Hovered)
+                if !timer.paused() && !timer.finished() =>
+            {
+                outline.colour = Color::BLUE;
+                outline.visible = true;
+            }
             Some(Highlight::Hovered) => {
-                outline.colour = Color::GREEN;
+                outline.colour = match block.state {
+                    BlockState::OutOfPlace => Color::RED,
+                    BlockState::InPosition => Color::GREEN,
+                };
                 outline.visible = true;
             }
             Some(Highlight::Pressed) => {
-                outline.colour = Color::RED;
+                outline.colour = Color::BLUE;
                 outline.visible = true;
             }
             _ => {

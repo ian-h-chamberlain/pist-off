@@ -11,12 +11,14 @@ pub struct ActivatePlugin;
 impl Plugin for ActivatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AnimationClips>()
+            .add_event::<ToggleEvent>()
             .add_system(
                 activate_selected_block
                     .in_base_set(CoreSet::PostUpdate)
                     .run_if(in_state(GameState::Playing)),
             )
-            .add_system(animate_toggled_blocks.in_set(OnUpdate(GameState::Playing)));
+            .add_system(animate_toggled_blocks.in_set(OnUpdate(GameState::Playing)))
+            .add_system(fire_toggle_timers.in_set(OnUpdate(GameState::Playing)));
     }
 }
 
@@ -30,16 +32,23 @@ fn activate_selected_block(
                 .get_mut(ent)
                 .expect("only Blocks should be selectable");
 
+            // TODO: probably don't allow toggling blocks "out of place", or at least reconsider it
             block.state.toggle();
             log::info!("block {ent:?} toggled to {:?}", block.state);
         }
     }
 }
 
+#[derive(Default)]
+pub struct AnimationClipHandle {
+    pub handle: Handle<AnimationClip>,
+    pub duration: f32,
+}
+
 #[derive(Default, Resource)]
 pub struct AnimationClips {
-    pub out_of_place: Handle<AnimationClip>,
-    pub in_position: Handle<AnimationClip>,
+    pub out_of_place: AnimationClipHandle,
+    pub in_position: AnimationClipHandle,
 }
 
 pub fn prepare_animations(
@@ -66,7 +75,10 @@ pub fn prepare_animations(
         },
     );
 
-    anim_clips.out_of_place = animations.add(clip);
+    anim_clips.out_of_place = AnimationClipHandle {
+        duration: clip.duration(),
+        handle: animations.add(clip),
+    };
 
     let mut clip = AnimationClip::default();
     clip.add_curve_to_path(
@@ -80,13 +92,16 @@ pub fn prepare_animations(
         },
     );
 
-    anim_clips.in_position = animations.add(clip);
+    anim_clips.in_position = AnimationClipHandle {
+        duration: clip.duration(),
+        handle: animations.add(clip),
+    };
 
     for &block in &blocks {
         log::trace!("building animation for block {block:?}");
 
         let mut player = AnimationPlayer::default();
-        player.play(anim_clips.out_of_place.clone());
+        player.play(anim_clips.out_of_place.handle.clone());
 
         commands.entity(block).insert((player, block_name.clone()));
     }
@@ -94,13 +109,24 @@ pub fn prepare_animations(
     blocks
 }
 
+#[derive(Component, DerefMut, Deref)]
+pub struct ToggleTimer(Timer);
+
+impl Default for ToggleTimer {
+    fn default() -> Self {
+        let mut dummy_timer = Timer::from_seconds(0.0, TimerMode::Once);
+        dummy_timer.pause();
+        Self(dummy_timer)
+    }
+}
+
 fn animate_toggled_blocks(
-    mut blocks: Query<(&mut AnimationPlayer, Ref<Block>), Changed<Block>>,
+    mut blocks: Query<(&mut AnimationPlayer, Ref<Block>, &mut ToggleTimer), Changed<Block>>,
     clips: Res<AnimationClips>,
 ) {
     let anim_speed = tweak!(3.0);
 
-    for (mut player, block) in &mut blocks {
+    for (mut player, block, mut timer) in &mut blocks {
         if block.is_added() {
             // just so we can tweak on the fly:
             player.set_speed(anim_speed);
@@ -110,14 +136,40 @@ fn animate_toggled_blocks(
         }
 
         let clip = match block.state {
-            BlockState::OutOfPlace => clips.out_of_place.clone(),
-            BlockState::InPosition => clips.in_position.clone(),
+            BlockState::OutOfPlace => &clips.out_of_place,
+            BlockState::InPosition => &clips.in_position,
         };
 
-        let elapsed = player.elapsed().min(1.0);
+        let elapsed = player.elapsed().min(clip.duration);
         player
-            .play(clip)
-            .set_elapsed(1.0 - elapsed)
+            .play(clip.handle.clone())
+            .set_elapsed(clip.duration - elapsed)
             .set_speed(anim_speed);
+
+        *timer = ToggleTimer(Timer::from_seconds(
+            (clip.duration / anim_speed) - player.elapsed(),
+            TimerMode::Once,
+        ));
+    }
+}
+
+/// Indicates a block has finished its trajectory to the given state.
+pub struct ToggleEvent {
+    pub state: BlockState,
+    pub block: Entity,
+}
+
+fn fire_toggle_timers(
+    time: Res<Time>,
+    mut blocks: Query<(Entity, &Block, &mut ToggleTimer)>,
+    mut events: EventWriter<ToggleEvent>,
+) {
+    for (entity, block, mut timer) in &mut blocks {
+        if timer.tick(time.delta()).just_finished() {
+            events.send(ToggleEvent {
+                state: block.state,
+                block: entity,
+            });
+        }
     }
 }

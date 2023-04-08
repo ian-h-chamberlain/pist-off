@@ -12,7 +12,7 @@ use crate::cubes::highlight::{HighlightableBundle, UnpickableBundle};
 use crate::loading::GLTFAssets;
 use crate::GameState;
 
-use self::activation::ActivatePlugin;
+use self::activation::{ActivatePlugin, ToggleTimer};
 use self::graph::GraphPlugin;
 use self::highlight::HighlightPlugin;
 
@@ -51,6 +51,13 @@ pub struct Block {
     pub state: BlockState,
     /// Which way the block moves "forward" when it's out of place
     pub out_direction: Vec3,
+}
+
+#[derive(Bundle, Default)]
+struct BlockBundle {
+    pub block: Block,
+    pub toggle_timer: ToggleTimer,
+    pub highlight: HighlightableBundle,
 }
 
 /// Whether a block is in its proper place or not.
@@ -152,7 +159,7 @@ fn spawn_blocks(
 ) -> (Vec<Entity>, f32) {
     let mut ids = Vec::new();
 
-    let num_cubes_per_axis = 2_i16;
+    let num_cubes_per_axis = 1_i16;
 
     let cube_scale = 1.0 / f32::from(num_cubes_per_axis);
     let mut color_idx: usize = rand::random();
@@ -230,8 +237,10 @@ fn spawn_blocks(
                         if axes.is_empty() {
                             block_cmd.insert(UnpickableBundle::default());
                         } else {
-                            block_cmd.insert((block, HighlightableBundle::default()));
-                            ids.push(block_cmd.id());
+                            let block_id =
+                                block_cmd.insert(BlockBundle { block, ..default() }).id();
+
+                            ids.push(block_id);
                         }
                     });
             }

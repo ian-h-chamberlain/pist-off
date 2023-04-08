@@ -29,9 +29,9 @@ pub fn set_movement_actions(mut actions: ResMut<Actions>, keyboard_input: Res<In
             - get_movement(GameControl::Down, &keyboard_input),
     );
 
-    if player_rotation != Vec2::ZERO {
-        actions.player_rotation = Some(player_rotation.normalize());
-    } else {
+    if player_rotation == Vec2::ZERO {
         actions.player_rotation = None;
+    } else {
+        actions.player_rotation = Some(player_rotation.normalize());
     }
 }
