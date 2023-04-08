@@ -10,7 +10,7 @@ use rand::Rng;
 
 use crate::GameState;
 
-use super::Block;
+use super::{Block, BlockState};
 
 pub struct GraphPlugin;
 
@@ -24,7 +24,8 @@ impl Plugin for GraphPlugin {
 #[derive(Component)]
 pub struct EntityGraph {
     arena: Arena<Entity>,
-    head: NodeId,
+    head: Entity,
+    nodes: HashMap<Entity, NodeId>,
 }
 
 impl EntityGraph {
@@ -66,16 +67,21 @@ impl EntityGraph {
         }
 
         // there might be a better way to find the root node, but this ought to work I think??
-        let head = nodes[&entities[0]].ancestors(&arena).last().unwrap();
+        let head_node = nodes[&entities[0]].ancestors(&arena).last().unwrap();
+        log::debug!("built tree:\n{:?}", head_node.debug_pretty_print(&arena));
 
-        log::debug!("built tree:\n{:?}", head.debug_pretty_print(&arena));
+        let head = *arena.get(head_node).unwrap().get();
 
-        Self { arena, head }
+        Self { arena, head, nodes }
     }
 
-    fn children(&self, block: &Entity) -> Vec<Entity> {
-        // TODO:
-        Vec::new()
+    fn children(&self, block: Entity) -> Vec<Entity> {
+        let Some(node) = self.nodes.get(&block) else { return Vec::new() };
+
+        node.children(&self.arena)
+            .map(|node| self.arena.get(node).unwrap().get())
+            .copied()
+            .collect()
     }
 }
 
@@ -100,7 +106,9 @@ pub fn propagate_block_toggles(
     mut blocks: Query<(Entity, &mut Block)>,
     graph: Query<&EntityGraph>,
 ) {
-    // TODO: figure out how to delay the propagation until animation plays or something?
+    // TODO: want to delay the propagation until animation plays or something?
+    // it's actually fairly reasonable that it animates immediately at the moment.
+    // cascading effect might be nicer with delays though
     //
     // if !timer.tick(time.delta()).just_finished() {
     //     return;
@@ -115,17 +123,21 @@ pub fn propagate_block_toggles(
             continue;
         }
 
-        for child in graph.children(&entity) {
-            to_toggle.insert(child);
+        // moving a block out of place doesn't affect anything
+        if block.state == BlockState::InPosition {
+            for child in graph.children(entity) {
+                to_toggle.insert(child);
+            }
         }
     }
 
-    // TODO: idk if this is a very efficient way to iterate...
+    // idk if this is a very efficient way to iterate, but it seems to work okay.
     for entity in to_toggle {
         if let Ok((_, mut block)) = blocks.get_mut(entity) {
-            log::info!("propagating toggle to {entity:?}");
-            // TODO: this should only toggle from InPosition -> OutOfPlace
-            block.state.toggle();
+            if block.state == BlockState::InPosition {
+                log::info!("propagating toggle to {entity:?}");
+                block.state.toggle();
+            }
         } else {
             log::warn!("couldn't find {entity:?} to propagate toggle");
         }

@@ -152,7 +152,7 @@ fn spawn_blocks(
 ) -> (Vec<Entity>, f32) {
     let mut ids = Vec::new();
 
-    let num_cubes_per_axis = 1_i16;
+    let num_cubes_per_axis = 2_i16;
 
     let cube_scale = 1.0 / f32::from(num_cubes_per_axis);
     let mut color_idx: usize = rand::random();
