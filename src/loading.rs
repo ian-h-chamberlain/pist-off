@@ -2,7 +2,6 @@ use bevy::gltf::Gltf;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 
-
 use crate::GameState;
 
 pub struct LoadingPlugin;

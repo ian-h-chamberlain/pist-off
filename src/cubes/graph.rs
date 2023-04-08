@@ -1,12 +1,7 @@
-use std::collections::{BTreeMap, VecDeque};
-
 use bevy::log;
 use bevy::prelude::*;
 use bevy::utils::{HashMap, HashSet};
 use indextree::{Arena, NodeId};
-use rand::distributions::Slice;
-use rand::seq::{IteratorRandom, SliceRandom};
-use rand::Rng;
 
 use crate::GameState;
 
@@ -30,8 +25,6 @@ pub struct EntityGraph {
 
 impl EntityGraph {
     fn random_from_entities(entities: Vec<Entity>) -> Self {
-        let rng = &mut rand::thread_rng();
-
         let mut arena = Arena::new();
 
         let nodes: HashMap<Entity, NodeId> = entities
@@ -101,8 +94,8 @@ impl Default for PropagateTimer {
 }
 
 pub fn propagate_block_toggles(
-    time: Res<Time>,
-    mut timer: ResMut<PropagateTimer>,
+    _time: Res<Time>,
+    _timer: ResMut<PropagateTimer>,
     mut blocks: Query<(Entity, &mut Block)>,
     graph: Query<&EntityGraph>,
 ) {
