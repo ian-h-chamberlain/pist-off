@@ -1,9 +1,10 @@
-use std::collections::VecDeque;
+use std::collections::{BTreeMap, VecDeque};
 
 use bevy::log;
 use bevy::prelude::*;
-use bevy::utils::HashSet;
+use bevy::utils::{HashMap, HashSet};
 use indextree::{Arena, NodeId};
+use rand::distributions::Slice;
 use rand::seq::{IteratorRandom, SliceRandom};
 use rand::Rng;
 
@@ -27,44 +28,45 @@ pub struct EntityGraph {
 }
 
 impl EntityGraph {
-    fn random_from_entities(mut entities: Vec<Entity>) -> Self {
+    fn random_from_entities(entities: Vec<Entity>) -> Self {
         let rng = &mut rand::thread_rng();
-        entities.shuffle(rng);
 
         let mut arena = Arena::new();
 
-        // TODO: we should probably attach these NodeIDs as components on the blocks
-        // to keep track of stuff
-        let head = arena.new_node(
-            entities
-                .pop()
-                .expect("should have at least one entity to start"),
-        );
+        let nodes: HashMap<Entity, NodeId> = entities
+            .iter()
+            .map(|&ent| (ent, arena.new_node(ent)))
+            .collect();
 
-        let mut current = head;
-        let mut next = VecDeque::new();
-        next.push_back(current);
+        let avg_children = 3;
+        let digraph = graphalgs::generate::random_digraph(
+            entities.len(),
+            entities.len() * (entities.len() - 1) / avg_children,
+        )
+        .expect("should always be a valid number of edges");
 
-        let max_children = 3;
+        for (parent, child) in digraph {
+            let child = &entities[child];
+            let parent = &entities[parent];
 
-        while !entities.is_empty() {
-            for _ in 0..rng.gen_range(0..max_children) {
-                if let Some(ent) = entities.pop() {
-                    current.append_value(ent, &mut arena);
-                } else {
-                    break;
+            if let Err(e1) = nodes[parent].checked_append(nodes[child], &mut arena) {
+                if let Err(e2) = nodes[child].checked_append(nodes[parent], &mut arena) {
+                    log::warn!("failed to create any edge {child:?} <-> {parent:?}: {e1}, {e2}");
                 }
             }
-
-            let amount = rng.gen_range(0..max_children);
-            for random_next in current.children(&arena).choose_multiple(rng, amount) {
-                next.push_back(random_next);
-            }
-
-            if let Some(next) = next.pop_front() {
-                current = next;
-            }
         }
+
+        debug_assert!(
+            arena.count() == entities.len(),
+            "failed to add some blocks to the graph",
+        );
+        #[cfg(not(debug_assertions))]
+        if arena.count() != entities.len() {
+            log::error!("failed to add some blocks to the graph! this puzzle could be unsolvable");
+        }
+
+        // there might be a better way to find the root node, but this ought to work I think??
+        let head = nodes[&entities[0]].ancestors(&arena).last().unwrap();
 
         log::debug!("built tree:\n{:?}", head.debug_pretty_print(&arena));
 
@@ -126,6 +128,29 @@ pub fn propagate_block_toggles(
             block.state.toggle();
         } else {
             log::warn!("couldn't find {entity:?} to propagate toggle");
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // This isn't comprehensive, but hopefully gives a sense of whether the graph
+    // generation is likely to fail in general.
+    #[test]
+    fn generate_tree() {
+        // it's random, so let's do it a lot
+        for _ in 0..100 {
+            for entity_count in 8..120 {
+                let mut app = App::new();
+
+                let ents: Vec<Entity> = (0..entity_count)
+                    .map(|_| app.world.spawn_empty().id())
+                    .collect();
+
+                let _ = EntityGraph::random_from_entities(ents);
+            }
         }
     }
 }

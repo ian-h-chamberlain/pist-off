@@ -46,6 +46,7 @@ bevy_mod_outline = "0.4.0"
 winit = { version = "0.28", default-features = false }
 image = { version = "0.24", default-features = false }
 indextree = "4.6.0"
+graphalgs = "0.1.1"
 
 # inline_tweak uses std::time and probably wouldn't work on wasm anyway. Just
 # define the tweak macro as a transparent passthrough on wasm

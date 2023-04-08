@@ -152,7 +152,7 @@ fn spawn_blocks(
 ) -> (Vec<Entity>, f32) {
     let mut ids = Vec::new();
 
-    let num_cubes_per_axis = 2_i16;
+    let num_cubes_per_axis = 1_i16;
 
     let cube_scale = 1.0 / f32::from(num_cubes_per_axis);
     let mut color_idx: usize = rand::random();
@@ -206,7 +206,7 @@ fn spawn_blocks(
                 let transform = Transform::from_translation(translation)
                     .looking_to(out_direction, up_direction);
 
-                log::info!("spawning block {block:?} at {transform:?}");
+                log::debug!("spawning block {block:?} at {transform:?}");
 
                 parent
                     .spawn(

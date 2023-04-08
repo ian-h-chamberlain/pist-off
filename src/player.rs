@@ -59,8 +59,6 @@ fn rotate_camera(
 
     let speed = tweak!(0.4);
 
-    log::trace!("rotating camera by {:?}", rotation * speed);
-
     let rpms = TAU * speed * time.delta_seconds();
 
     for cube_transform in &cube {
