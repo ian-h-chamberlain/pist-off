@@ -38,6 +38,6 @@ pub struct TextureAssets {}
 
 #[derive(AssetCollection, Resource)]
 pub struct GLTFAssets {
-    #[asset(path = "models/cuby.gltf")]
+    #[asset(path = "models/cuby.glb")]
     pub cuby: Handle<Gltf>,
 }

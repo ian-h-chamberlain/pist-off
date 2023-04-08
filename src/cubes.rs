@@ -228,7 +228,11 @@ fn spawn_blocks(
                         let mut block_cmd = parent.spawn((MaterialMeshBundle {
                             mesh: cube_mesh.clone(),
                             // TODO: reuse color materials maybe?
-                            material: materials.add(color.into()),
+                            material: materials.add(StandardMaterial {
+                                metallic: 0.5,
+                                reflectance: 0.75,
+                                ..color.into()
+                            }),
                             // slightly smaller than 100% looks a little nicer
                             transform: Transform::from_scale(Vec3::splat(0.95 * cube_scale)),
                             ..default()
