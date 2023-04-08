@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy::utils::{HashMap, HashSet};
 use indextree::{Arena, NodeId};
 
-use crate::GameState;
+use crate::{tweak, GameState};
 
 use super::{Block, BlockState};
 
@@ -70,8 +70,16 @@ impl EntityGraph {
 
     fn children(&self, block: Entity) -> Vec<Entity> {
         let Some(node) = self.nodes.get(&block) else { return Vec::new() };
+        self.nodes_to_entities(node.children(&self.arena))
+    }
 
-        node.children(&self.arena)
+    fn ancestors(&self, block: Entity) -> Vec<Entity> {
+        let Some(node) = self.nodes.get(&block) else { return Vec::new() };
+        self.nodes_to_entities(node.ancestors(&self.arena).skip(1))
+    }
+
+    fn nodes_to_entities(&self, nodes: impl Iterator<Item = NodeId>) -> Vec<Entity> {
+        nodes
             .map(|node| self.arena.get(node).unwrap().get())
             .copied()
             .collect()
@@ -93,6 +101,25 @@ impl Default for PropagateTimer {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub enum PropagateMode {
+    /// Easier difficulty, since a mistake along the way is more likely to end up
+    /// costing less.
+    Children,
+    /// Harder difficulty. A mistake could end up resetting most of the cube.
+    Ancestors,
+}
+
+impl From<u8> for PropagateMode {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => Self::Children,
+            1 => Self::Ancestors,
+            _ => unreachable!(),
+        }
+    }
+}
+
 pub fn propagate_block_toggles(
     _time: Res<Time>,
     _timer: ResMut<PropagateTimer>,
@@ -109,6 +136,8 @@ pub fn propagate_block_toggles(
 
     let graph = graph.single();
 
+    let mode = tweak!(1).into();
+
     let mut to_toggle = HashSet::new();
 
     for (entity, block) in &mut blocks {
@@ -118,7 +147,12 @@ pub fn propagate_block_toggles(
 
         // moving a block out of place doesn't affect anything
         if block.state == BlockState::InPosition {
-            for child in graph.children(entity) {
+            let affected_blocks = match mode {
+                PropagateMode::Children => graph.children(entity),
+                PropagateMode::Ancestors => graph.ancestors(entity),
+            };
+
+            for child in affected_blocks {
                 to_toggle.insert(child);
             }
         }
