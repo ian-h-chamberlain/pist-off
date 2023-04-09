@@ -3,12 +3,11 @@ body, html {
 }
 
 body {
-    background: repeating-linear-gradient(
-        135deg,
-        black 0,
-        black 2px,
-        white 2px,
-        white 20px
+    background: repeating-radial-gradient(
+        circle at 50% 50%,
+            #444,
+            #666
+            45px
     );
     margin: 0;
 }
@@ -25,4 +24,5 @@ body {
     background-color: white;
     width: 800px;
     height: 600px;
+    border: solid 10px #4B3222;
 }
