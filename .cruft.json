@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/ian-h-chamberlain/bevy_cookiecutter",
-  "commit": "e2e26e731ed1fd89653b97e5155df5c6c76fc800",
+  "commit": "518c3d8024c44bc7db8932d41ea00da4c9340f88",
   "checkout": null,
   "context": {
     "cookiecutter": {
