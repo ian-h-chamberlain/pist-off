@@ -69,7 +69,7 @@ jobs:
           cp -r credits/ build/macos/src/Game.app/Contents/MacOS/credits
           cp target/release/${{ env.GAME_EXECUTABLE_NAME }} build/macos/src/Game.app/Contents/MacOS/
           strip build/macos/src/Game.app/Contents/MacOS/${{ env.GAME_EXECUTABLE_NAME }}
-          mv build/macos/src/Game.app build/macos/src/${{ env.GAME_OSX_APP_NAME }}.app
+          mv build/macos/src/Game.app "build/macos/src/${{ env.GAME_OSX_APP_NAME }}.app"
           ln -s /Applications build/macos/src/
           hdiutil create -fs HFS+ -volname "${{ env.GAME_OSX_APP_NAME }}" -srcfolder build/macos/src ${{ env.GAME_EXECUTABLE_NAME }}.dmg
       - name: Upload release
