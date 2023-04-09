@@ -1,6 +1,6 @@
 [package]
 name = "pist-off"
-version = "0.1.0"
+version = "1.0.2"
 publish = false
 authors = ["Ian Chamberlain <ian-h-chamberlain@users.noreply.github.com>"]
 edition = "2021"
