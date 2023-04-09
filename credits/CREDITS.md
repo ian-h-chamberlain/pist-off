@@ -7,4 +7,10 @@
 
 ## Assets
 
-TBD...
+## Models / textures
+
+Original by [Ian Chamberlain](https://github.com/ian-h-chamberlain)
+
+### Font
+
+Suwannaphum by Danh Hong ([Open Font License](OFL.txt))

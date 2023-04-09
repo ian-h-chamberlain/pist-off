@@ -10,12 +10,11 @@
 }
 
 body {
-    background: repeating-linear-gradient(
-        135deg,
-        black 0,
-        black 2px,
-        white 2px,
-        white 20px
+    background: repeating-radial-gradient(
+        circle at 50% 50%,
+            #444,
+            #666
+            45px
     );
     margin: 0;
 }
@@ -32,11 +31,12 @@ body {
     background-color: white;
     width: 800px;
     height: 600px;
+    border: solid 10px rgb(74, 49, 33);
 }
 </style>
     
-<link rel="preload" href="/pist-off/pist-off-8149cd7532b0a77_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/pist-off/pist-off-8149cd7532b0a77.js"></head>
+<link rel="preload" href="/pist-off/pist-off-75f9403bcd5fd381_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/pist-off/pist-off-75f9403bcd5fd381.js"></head>
     <body>
         <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
 // https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
@@ -108,4 +108,4 @@ body {
         </div>
     
 
-<script type="module">import init from '/pist-off/pist-off-8149cd7532b0a77.js';init('/pist-off/pist-off-8149cd7532b0a77_bg.wasm');</script></body></html>
+<script type="module">import init from '/pist-off/pist-off-75f9403bcd5fd381.js';init('/pist-off/pist-off-75f9403bcd5fd381_bg.wasm');</script></body></html>
