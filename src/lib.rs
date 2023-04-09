@@ -1,19 +1,17 @@
 #![allow(clippy::needless_pass_by_value)]
 
 mod actions;
-mod audio;
 mod cubes;
 mod loading;
 mod macros;
 mod menu;
 mod player;
 
-use crate::actions::ActionsPlugin;
-use crate::audio::InternalAudioPlugin;
-use crate::cubes::CubePlugin;
-use crate::loading::LoadingPlugin;
-use crate::menu::MenuPlugin;
-use crate::player::PlayerPlugin;
+use self::actions::ActionsPlugin;
+use self::cubes::CubePlugin;
+use self::loading::LoadingPlugin;
+use self::menu::MenuPlugin;
+use self::player::PlayerPlugin;
 
 use bevy::app::App;
 use bevy::prelude::*;
@@ -43,7 +41,6 @@ impl Plugin for GamePlugin {
             .add_plugin(LoadingPlugin)
             .add_plugin(MenuPlugin)
             .add_plugin(ActionsPlugin)
-            .add_plugin(InternalAudioPlugin)
             .add_plugin(CubePlugin)
             .add_plugin(PlayerPlugin);
 
