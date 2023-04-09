@@ -2480,7 +2480,7 @@ checksum = "e0a7ae3ac2f1173085d398531c705756c94a4c56843785df85a60c1a0afac116"
 
 [[package]]
 name = "pist-off"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "bevy",
  "bevy_asset_loader",
