@@ -12,15 +12,19 @@ impl Plugin for MenuPlugin {
         app.init_resource::<ButtonColors>()
             .add_system(setup_menu.in_schedule(OnEnter(GameState::Menu)))
             .add_system(click_play_button.in_set(OnUpdate(GameState::Menu)))
+            .add_system(color_buttons.in_base_set(CoreSet::Update))
             .add_system(cleanup_menu.in_schedule(OnExit(GameState::Menu)));
     }
 }
 
 #[derive(Resource)]
-struct ButtonColors {
-    normal: Color,
-    hovered: Color,
+pub struct ButtonColors {
+    pub normal: Color,
+    pub hovered: Color,
 }
+
+#[derive(Component)]
+pub struct PlayButton;
 
 impl Default for ButtonColors {
     fn default() -> Self {
@@ -49,32 +53,27 @@ fn setup_menu(
         .insert(PickingCameraBundle::default());
 
     commands
-        .spawn(ButtonBundle {
-            style: Style {
-                size: Size::new(Val::Px(120.0), Val::Px(50.0)),
-                margin: UiRect::all(Val::Auto),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
+        .spawn((
+            PlayButton,
+            ButtonBundle {
+                style: Style {
+                    size: Size::new(Val::Px(120.0), Val::Px(50.0)),
+                    margin: UiRect::all(Val::Auto),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..Default::default()
+                },
+                background_color: button_colors.normal.into(),
                 ..Default::default()
             },
-            background_color: button_colors.normal.into(),
-            ..Default::default()
-        })
+        ))
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Play",
-                TextStyle {
-                    font: font_assets.fira_sans.clone(),
-                    font_size: 40.0,
-                    color: Color::rgb(0.9, 0.9, 0.9),
-                },
-            ));
+            parent.spawn(TextBundle::from_section("Play", font_assets.text_style()));
         });
 }
 
-fn click_play_button(
+fn color_buttons(
     button_colors: Res<ButtonColors>,
-    mut state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -82,19 +81,30 @@ fn click_play_button(
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
-            Interaction::Clicked => {
-                state.set(GameState::Playing);
-            }
             Interaction::Hovered => {
                 *color = button_colors.hovered.into();
             }
             Interaction::None => {
                 *color = button_colors.normal.into();
             }
+            _ => {}
         }
     }
 }
 
-fn cleanup_menu(mut commands: Commands, button: Query<Entity, With<Button>>) {
-    commands.entity(button.single()).despawn_recursive();
+fn click_play_button(
+    mut state: ResMut<NextState<GameState>>,
+    mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<PlayButton>)>,
+) {
+    for interaction in &mut interaction_query {
+        if let Interaction::Clicked = *interaction {
+            state.set(GameState::Playing);
+        }
+    }
+}
+
+fn cleanup_menu(mut commands: Commands, buttons: Query<Entity, With<Button>>) {
+    for button in &buttons {
+        commands.entity(button).despawn_recursive();
+    }
 }

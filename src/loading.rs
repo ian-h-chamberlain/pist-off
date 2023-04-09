@@ -30,6 +30,16 @@ pub struct FontAssets {
     pub fira_sans: Handle<Font>,
 }
 
+impl FontAssets {
+    pub fn text_style(&self) -> TextStyle {
+        TextStyle {
+            font: self.fira_sans.clone(),
+            font_size: 40.0,
+            color: Color::rgb(0.9, 0.9, 0.9),
+        }
+    }
+}
+
 #[derive(AssetCollection, Resource)]
 pub struct AudioAssets {}
 

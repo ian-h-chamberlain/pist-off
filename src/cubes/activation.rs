@@ -146,10 +146,8 @@ fn animate_toggled_blocks(
             .set_elapsed(clip.duration - elapsed)
             .set_speed(anim_speed);
 
-        *timer = ToggleTimer(Timer::from_seconds(
-            (clip.duration / anim_speed) - player.elapsed(),
-            TimerMode::Once,
-        ));
+        let duration = (clip.duration / anim_speed) - player.elapsed();
+        *timer = ToggleTimer(Timer::from_seconds(duration.max(0.0), TimerMode::Once));
     }
 }
 

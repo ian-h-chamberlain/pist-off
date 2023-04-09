@@ -2,6 +2,7 @@
 
 mod actions;
 mod cubes;
+mod level;
 mod loading;
 mod macros;
 mod menu;
@@ -18,6 +19,7 @@ use bevy::prelude::*;
 
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use level::LevelPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -29,6 +31,8 @@ enum GameState {
     Loading,
     /// During this State the actual game logic is executed
     Playing,
+    /// The level is complete and being prepared for the next level.
+    Reset,
     /// Here the menu is drawn and waiting for player interaction
     Menu,
 }
@@ -40,6 +44,7 @@ impl Plugin for GamePlugin {
         app.add_state::<GameState>()
             .add_plugin(LoadingPlugin)
             .add_plugin(MenuPlugin)
+            .add_plugin(LevelPlugin)
             .add_plugin(ActionsPlugin)
             .add_plugin(CubePlugin)
             .add_plugin(PlayerPlugin);
@@ -49,7 +54,8 @@ impl Plugin for GamePlugin {
             app.add_plugin(FrameTimeDiagnosticsPlugin::default())
                 .add_plugin(LogDiagnosticsPlugin::default())
                 // TODO: pause and/or proper quit menu
-                .add_system(bevy::window::close_on_esc);
+                .add_system(bevy::window::close_on_esc)
+                .add_system(level::skip_level);
         }
     }
 }

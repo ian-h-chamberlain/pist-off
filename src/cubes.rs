@@ -13,36 +13,51 @@ use crate::loading::GLTFAssets;
 use crate::GameState;
 
 use self::activation::{ActivatePlugin, ToggleTimer};
+pub use self::graph::EntityGraph;
 use self::graph::GraphPlugin;
+
 use self::highlight::HighlightPlugin;
 
 pub struct CubePlugin;
 
 impl Plugin for CubePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(
-            DefaultPickingPlugins
-                .build()
-                // disable the default material based highlighting
-                .disable::<CustomHighlightPlugin<StandardMaterial>>()
-                .disable::<CustomHighlightPlugin<ColorMaterial>>(),
-        )
-        .add_plugin(ActivatePlugin)
-        .add_plugin(GraphPlugin)
-        .add_plugin(HighlightPlugin)
-        .add_system(
-            spawn_cuby
-                .pipe(activation::prepare_animations)
-                .pipe(graph::build_graph)
-                .in_base_set(CoreSet::PreUpdate)
-                .in_schedule(OnEnter(GameState::Playing)),
-        );
+        app.init_resource::<BlockCount>()
+            .add_plugins(
+                DefaultPickingPlugins
+                    .build()
+                    // disable the default material based highlighting
+                    .disable::<CustomHighlightPlugin<StandardMaterial>>()
+                    .disable::<CustomHighlightPlugin<ColorMaterial>>(),
+            )
+            .add_plugin(ActivatePlugin)
+            .add_plugin(GraphPlugin)
+            .add_plugin(HighlightPlugin)
+            .add_system(
+                spawn_cuby
+                    .pipe(activation::prepare_animations)
+                    .pipe(graph::build_graph)
+                    .in_base_set(CoreSet::PreUpdate)
+                    .in_schedule(OnEnter(GameState::Playing)),
+            );
     }
 }
 
 /// The "holding box" of the cube.
 #[derive(Component)]
 pub struct CubeFrame;
+
+/// The number of blocks per axis to spawn into the cube.
+// TODO: allow this to be a number of blocks per *side* instead, so we could start
+// at 1 and work our way up.
+#[derive(Resource)]
+pub struct BlockCount(pub i16);
+
+impl Default for BlockCount {
+    fn default() -> Self {
+        Self(1)
+    }
+}
 
 /// The interactable components of the cube.
 #[derive(Component, Default, Debug)]
@@ -119,6 +134,7 @@ fn spawn_cuby(
     gltf: Res<GLTFAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    block_count: Res<BlockCount>,
 ) -> (Vec<Entity>, f32) {
     let root = gltf_assets.get(&gltf.cuby).unwrap();
 
@@ -134,7 +150,7 @@ fn spawn_cuby(
             ..default()
         })
         .with_children(|parent| {
-            (blocks, block_scale) = spawn_blocks(parent, cube, &mut materials);
+            (blocks, block_scale) = spawn_blocks(parent, cube, &mut materials, block_count);
         })
         .id();
 
@@ -156,10 +172,11 @@ fn spawn_blocks(
     parent: &mut ChildBuilder,
     cube_mesh: Handle<Mesh>,
     materials: &mut Assets<StandardMaterial>,
+    block_count: Res<BlockCount>,
 ) -> (Vec<Entity>, f32) {
     let mut ids = Vec::new();
 
-    let num_cubes_per_axis = 1_i16;
+    let num_cubes_per_axis = block_count.0;
 
     let cube_scale = 1.0 / f32::from(num_cubes_per_axis);
     let mut color_idx: usize = rand::random();

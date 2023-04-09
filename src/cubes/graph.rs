@@ -19,7 +19,6 @@ impl Plugin for GraphPlugin {
 #[derive(Component)]
 pub struct EntityGraph {
     arena: Arena<Entity>,
-    head: Entity,
     nodes: HashMap<Entity, NodeId>,
 }
 
@@ -63,9 +62,7 @@ impl EntityGraph {
         let head_node = nodes[&entities[0]].ancestors(&arena).last().unwrap();
         log::debug!("built tree:\n{:?}", head_node.debug_pretty_print(&arena));
 
-        let head = *arena.get(head_node).unwrap().get();
-
-        Self { arena, head, nodes }
+        Self { arena, nodes }
     }
 
     fn children(&self, block: Entity) -> Vec<Entity> {
