@@ -1,9 +1,14 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+    <!--
+        in theory , Version could be pulled from the executable if we added it in
+        with embed-resource but leaving it blank to be overridden on command line
+        seems to work fine.
+    -->
     <Package
         Name="Pist Off"
         Manufacturer="Ian Chamberlain"
         UpgradeCode="1b8656b4-db80-486a-9e2d-4eb599b35485"
-        Version="!(bind.fileVersion.Executable)"
+        Version=""
 
         Scope="perUserOrMachine">
         <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
