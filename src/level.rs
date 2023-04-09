@@ -3,7 +3,7 @@ use bevy::prelude::*;
 #[cfg(not(target_family = "wasm"))]
 use bevy::app::AppExit;
 
-use crate::cubes::{Block, BlockCount, BlockState, CubeFrame, EntityGraph};
+use crate::cubes::{Block, BlockCount, BlockState, CubeFrame, EntityGraph, ToggleEvent};
 use crate::loading::FontAssets;
 use crate::menu::ButtonColors;
 use crate::GameState;
@@ -24,7 +24,16 @@ impl Plugin for LevelPlugin {
     }
 }
 
-fn win_condition(blocks: Query<&Block>, mut next_state: ResMut<NextState<GameState>>) {
+fn win_condition(
+    blocks: Query<&Block>,
+    mut events: EventReader<ToggleEvent>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    if events.iter().all(|evt| evt.state != BlockState::InPosition) {
+        return;
+    }
+
+    // TODO: maybe add even more of a slight delay ?
     if blocks
         .iter()
         .all(|block| block.state == BlockState::InPosition)

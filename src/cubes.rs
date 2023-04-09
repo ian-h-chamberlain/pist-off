@@ -13,10 +13,11 @@ use crate::loading::GLTFAssets;
 use crate::GameState;
 
 use self::activation::{ActivatePlugin, ToggleTimer};
-pub use self::graph::EntityGraph;
 use self::graph::GraphPlugin;
-
 use self::highlight::HighlightPlugin;
+
+pub use self::activation::ToggleEvent;
+pub use self::graph::EntityGraph;
 
 pub struct CubePlugin;
 
