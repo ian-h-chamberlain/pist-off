@@ -29,8 +29,8 @@ pub struct PlayButton;
 impl Default for ButtonColors {
     fn default() -> Self {
         ButtonColors {
-            normal: Color::rgb(0.15, 0.15, 0.15),
-            hovered: Color::rgb(0.25, 0.25, 0.25),
+            normal: Color::rgb_u8(100, 100, 100),
+            hovered: Color::rgb_u8(60, 60, 60),
         }
     }
 }
@@ -68,7 +68,7 @@ fn setup_menu(
             },
         ))
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section("Play", font_assets.text_style()));
+            parent.spawn(TextBundle::from_section("Play", font_assets.button_style()));
         });
 }
 

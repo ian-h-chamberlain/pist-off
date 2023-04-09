@@ -15,8 +15,6 @@ impl Plugin for LoadingPlugin {
             LoadingState::new(GameState::Loading).continue_to_state(GameState::Menu),
         )
         .add_collection_to_loading_state::<_, FontAssets>(GameState::Loading)
-        .add_collection_to_loading_state::<_, AudioAssets>(GameState::Loading)
-        .add_collection_to_loading_state::<_, TextureAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, GLTFAssets>(GameState::Loading);
     }
 }
@@ -26,28 +24,29 @@ impl Plugin for LoadingPlugin {
 
 #[derive(AssetCollection, Resource)]
 pub struct FontAssets {
-    #[asset(path = "fonts/FiraSans-Bold.ttf")]
-    pub fira_sans: Handle<Font>,
+    #[asset(path = "fonts/Suwannaphum-Regular.ttf")]
+    pub suwannaphum: Handle<Font>,
 }
 
 impl FontAssets {
     pub fn text_style(&self) -> TextStyle {
         TextStyle {
-            font: self.fira_sans.clone(),
-            font_size: 40.0,
-            color: Color::rgb(0.9, 0.9, 0.9),
+            font: self.suwannaphum.clone(),
+            font_size: 50.0,
+            color: Color::rgb_u8(74, 49, 33),
+        }
+    }
+
+    pub fn button_style(&self) -> TextStyle {
+        TextStyle {
+            color: Color::BEIGE,
+            ..self.text_style()
         }
     }
 }
 
 #[derive(AssetCollection, Resource)]
-pub struct AudioAssets {}
-
-#[derive(AssetCollection, Resource)]
-pub struct TextureAssets {}
-
-#[derive(AssetCollection, Resource)]
 pub struct GLTFAssets {
-    #[asset(path = "models/cuby.glb")]
+    #[asset(path = "models/cuby.gltf")]
     pub cuby: Handle<Gltf>,
 }

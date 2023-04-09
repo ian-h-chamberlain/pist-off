@@ -45,6 +45,7 @@ default = [
     "bevy/bevy_text",
     "bevy/bevy_ui",
     "bevy/png",
+    "bevy/jpeg",
     "bevy/hdr",
     "bevy/zstd",
     "bevy/x11",
