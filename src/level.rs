@@ -1,5 +1,7 @@
-use bevy::app::AppExit;
 use bevy::prelude::*;
+
+#[cfg(not(target_family = "wasm"))]
+use bevy::app::AppExit;
 
 use crate::cubes::{Block, BlockCount, BlockState, CubeFrame, EntityGraph};
 use crate::loading::FontAssets;
@@ -14,8 +16,11 @@ impl Plugin for LevelPlugin {
             .add_system(reset_level.in_schedule(OnEnter(GameState::Reset)))
             .add_system(cleanup_continue.in_schedule(OnExit(GameState::Reset)))
             .add_system(setup_buttons.in_schedule(OnEnter(GameState::Reset)))
-            .add_system(click_continue.in_set(OnUpdate(GameState::Reset)))
-            .add_system(click_quit.in_set(OnUpdate(GameState::Reset)));
+            .add_system(click_continue.in_set(OnUpdate(GameState::Reset)));
+
+        // "quitting" kinda just crashes the app in wasm, let's not do that
+        #[cfg(not(target_family = "wasm"))]
+        app.add_system(click_quit.in_set(OnUpdate(GameState::Reset)));
     }
 }
 
@@ -110,6 +115,7 @@ fn spawn_buttons(
             ));
         });
 
+    #[cfg(not(target_family = "wasm"))]
     parent.spawn((QuitButton, button)).with_children(|parent| {
         parent.spawn(TextBundle::from_section("Quit", font_assets.button_style()));
     });
@@ -140,6 +146,7 @@ fn click_continue(
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 fn click_quit(
     mut quit_interaction: Query<&Interaction, (Changed<Interaction>, With<QuitButton>)>,
     mut quit: EventWriter<AppExit>,
