@@ -16,7 +16,8 @@
         ".github/workflows/deploy-page.yml"
       ],
       "_extensions": [
-        "cookiecutter.extensions.SlugifyExtension"
+        "cookiecutter.extensions.SlugifyExtension",
+        "cookiecutter.extensions.UUIDExtension"
       ],
       "_template": "https://github.com/ian-h-chamberlain/bevy_cookiecutter"
     }
