@@ -1,3 +1,4 @@
+use bevy::app::AppExit;
 use bevy::prelude::*;
 
 use crate::cubes::{Block, BlockCount, BlockState, CubeFrame, EntityGraph};
@@ -12,8 +13,9 @@ impl Plugin for LevelPlugin {
         app.add_system(win_condition.in_set(OnUpdate(GameState::Playing)))
             .add_system(reset_level.in_schedule(OnEnter(GameState::Reset)))
             .add_system(cleanup_continue.in_schedule(OnExit(GameState::Reset)))
-            .add_system(setup_continue.in_schedule(OnEnter(GameState::Reset)))
-            .add_system(click_continue.in_set(OnUpdate(GameState::Reset)));
+            .add_system(setup_buttons.in_schedule(OnEnter(GameState::Reset)))
+            .add_system(click_continue.in_set(OnUpdate(GameState::Reset)))
+            .add_system(click_quit.in_set(OnUpdate(GameState::Reset)));
     }
 }
 
@@ -26,6 +28,7 @@ fn win_condition(blocks: Query<&Block>, mut next_state: ResMut<NextState<GameSta
     }
 }
 
+#[cfg(debug_assertions)]
 pub(crate) fn skip_level(
     mut next_state: ResMut<NextState<GameState>>,
     keyboard_input: Res<Input<KeyCode>>,
@@ -38,22 +41,28 @@ pub(crate) fn skip_level(
 #[derive(Component)]
 struct ContinueButton;
 
-fn setup_continue(
+#[derive(Component)]
+struct QuitButton;
+
+fn setup_buttons(
     mut commands: Commands,
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
+    let style = Style {
+        margin: UiRect::all(Val::Auto),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    };
+
     commands
         .spawn(NodeBundle {
             style: Style {
-                size: Size::new(Val::Px(120.0), Val::Px(100.0)),
-                margin: UiRect::all(Val::Auto),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
+                size: Size::new(Val::Px(350.0), Val::Px(125.0)),
                 flex_direction: FlexDirection::Column,
-                ..Default::default()
+                ..style.clone()
             },
-
             ..default()
         })
         .with_children(|parent| {
@@ -63,31 +72,47 @@ fn setup_continue(
             ));
 
             parent
-                .spawn((
-                    ContinueButton,
-                    ButtonBundle {
-                        style: Style {
-                            size: Size::new(Val::Px(150.0), Val::Px(50.0)),
-                            margin: UiRect::all(Val::Auto),
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            ..Default::default()
-                        },
-                        background_color: button_colors.normal.into(),
-                        ..Default::default()
+                .spawn(NodeBundle {
+                    style: Style {
+                        size: Size::new(Val::Px(350.0), Val::Px(50.0)),
+                        flex_direction: FlexDirection::Row,
+                        ..style
                     },
-                ))
-                .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "Continue",
-                        TextStyle {
-                            font: font_assets.suwannaphum.clone(),
-                            font_size: 40.0,
-                            color: Color::rgb(0.9, 0.9, 0.9),
-                        },
-                    ));
-                });
+                    ..default()
+                })
+                .with_children(|parent| spawn_buttons(parent, font_assets, button_colors));
         });
+}
+
+fn spawn_buttons(
+    parent: &mut ChildBuilder,
+    font_assets: Res<FontAssets>,
+    button_colors: Res<ButtonColors>,
+) {
+    let button = ButtonBundle {
+        style: Style {
+            size: Size::new(Val::Px(150.0), Val::Px(50.0)),
+            margin: UiRect::all(Val::Auto),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..Default::default()
+        },
+        background_color: button_colors.normal.into(),
+        ..Default::default()
+    };
+
+    parent
+        .spawn((ContinueButton, button.clone()))
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "Continue",
+                font_assets.button_style(),
+            ));
+        });
+
+    parent.spawn((QuitButton, button)).with_children(|parent| {
+        parent.spawn(TextBundle::from_section("Quit", font_assets.button_style()));
+    });
 }
 
 type IsGameEntity = Or<(With<CubeFrame>, With<EntityGraph>)>;
@@ -106,11 +131,22 @@ fn reset_level(
 
 fn click_continue(
     mut state: ResMut<NextState<GameState>>,
-    mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<ContinueButton>)>,
+    mut continue_interaction: Query<&Interaction, (Changed<Interaction>, With<ContinueButton>)>,
 ) {
-    for interaction in &mut interaction_query {
+    for interaction in &mut continue_interaction {
         if let Interaction::Clicked = *interaction {
             state.set(GameState::Playing);
+        }
+    }
+}
+
+fn click_quit(
+    mut quit_interaction: Query<&Interaction, (Changed<Interaction>, With<QuitButton>)>,
+    mut quit: EventWriter<AppExit>,
+) {
+    for interaction in &mut quit_interaction {
+        if let Interaction::Clicked = *interaction {
+            quit.send(AppExit);
         }
     }
 }

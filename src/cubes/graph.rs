@@ -100,12 +100,12 @@ pub enum PropagateMode {
     Ancestors,
 }
 
-impl From<u8> for PropagateMode {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => Self::Children,
-            1 => Self::Ancestors,
-            _ => unreachable!(),
+impl PropagateMode {
+    fn new(hard_mode: bool) -> Self {
+        if hard_mode {
+            Self::Ancestors
+        } else {
+            Self::Children
         }
     }
 }
@@ -117,7 +117,7 @@ pub fn propagate_block_toggles(
 ) {
     let graph = graph.single();
 
-    let mode = tweak!(1).into();
+    let mode = PropagateMode::new(tweak!(false));
 
     let mut to_toggle = HashSet::new();
 
@@ -138,7 +138,7 @@ pub fn propagate_block_toggles(
     }
 
     if !to_toggle.is_empty() {
-        log::info!("propagating toggles to {to_toggle:?}");
+        log::debug!("propagating toggles to {to_toggle:?}");
     }
 
     // idk if this is a very efficient way to iterate, but it seems to work okay.
