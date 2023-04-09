@@ -147,6 +147,7 @@ jobs:
           dest: ${{ env.GAME_EXECUTABLE_NAME }}_windows.zip
       - name: Create Installer
         run: dotnet build -c Release build/windows/installer/Installer.wixproj --output installer
+        continue-on-error: true
       - name: Upload release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -157,6 +158,7 @@ jobs:
           overwrite: true
       - name: Upload installer
         uses: svenstaro/upload-release-action@v2
+        continue-on-error: true
         with:
          repo_token: ${{ secrets.GITHUB_TOKEN }}
          file: installer/en-US/installer.msi
