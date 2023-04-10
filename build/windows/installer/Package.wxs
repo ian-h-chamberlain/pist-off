@@ -8,7 +8,7 @@
         Name="Pist Off"
         Manufacturer="Ian Chamberlain"
         UpgradeCode="1b8656b4-db80-486a-9e2d-4eb599b35485"
-        Version=""
+        Version="!(bind.Property.ProductVersion)"
 
         Scope="perUserOrMachine">
         <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
