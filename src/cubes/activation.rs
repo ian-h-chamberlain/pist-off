@@ -2,7 +2,7 @@ use bevy::log;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
 
-use crate::{tweak, GameState};
+use crate::GameState;
 
 use super::{Block, BlockState};
 
@@ -17,7 +17,11 @@ impl Plugin for ActivatePlugin {
                     .in_base_set(CoreSet::PostUpdate)
                     .run_if(in_state(GameState::Playing)),
             )
-            .add_system(animate_toggled_blocks.in_set(OnUpdate(GameState::Playing)))
+            .add_system(
+                animate_toggled_blocks
+                    .after(super::spawn_cuby)
+                    .in_set(OnUpdate(GameState::Playing)),
+            )
             .add_system(fire_toggle_timers.in_set(OnUpdate(GameState::Playing)));
     }
 }
@@ -69,7 +73,7 @@ pub fn prepare_animations(
             parts: vec![block_name.clone()],
         },
         VariableCurve {
-            keyframe_timestamps: vec![0.0, 1.0],
+            keyframe_timestamps: vec![0.0, 0.3],
             // Just animate going "forward" by one unit, KISS
             keyframes: Keyframes::Translation(vec![Vec3::ZERO, extrude_distance * -Vec3::Z]),
         },
@@ -86,7 +90,7 @@ pub fn prepare_animations(
             parts: vec![block_name.clone()],
         },
         VariableCurve {
-            keyframe_timestamps: vec![0.0, 1.0],
+            keyframe_timestamps: vec![0.0, 0.3],
             // Just animate going "backward" by one unit, KISS
             keyframes: Keyframes::Translation(vec![extrude_distance * -Vec3::Z, Vec3::ZERO]),
         },
@@ -121,19 +125,16 @@ impl Default for ToggleTimer {
 }
 
 fn animate_toggled_blocks(
-    mut blocks: Query<(&mut AnimationPlayer, Ref<Block>, &mut ToggleTimer), Changed<Block>>,
+    mut blocks: Query<(Entity, &mut AnimationPlayer, Ref<Block>, &mut ToggleTimer), Changed<Block>>,
     clips: Res<AnimationClips>,
 ) {
-    let anim_speed = tweak!(3.0);
-
-    for (mut player, block, mut timer) in &mut blocks {
+    for (ent, mut player, block, mut timer) in &mut blocks {
+        // blocks that just spawned already have their animation playing
         if block.is_added() {
-            // just so we can tweak on the fly:
-            player.set_speed(anim_speed);
-
-            // we don't need to change any animations to start out
             continue;
         }
+
+        log::debug!("playing anim {:?} on block {ent:?}", block.state);
 
         let clip = match block.state {
             BlockState::OutOfPlace => &clips.out_of_place,
@@ -143,10 +144,9 @@ fn animate_toggled_blocks(
         let elapsed = player.elapsed().min(clip.duration);
         player
             .play(clip.handle.clone())
-            .set_elapsed(clip.duration - elapsed)
-            .set_speed(anim_speed);
+            .set_elapsed(clip.duration - elapsed);
 
-        let duration = (clip.duration / anim_speed) - player.elapsed();
+        let duration = clip.duration - player.elapsed();
         *timer = ToggleTimer(Timer::from_seconds(duration.max(0.0), TimerMode::Once));
     }
 }
