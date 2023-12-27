@@ -1,8 +1,6 @@
 use crate::loading::FontAssets;
 use crate::GameState;
 use bevy::prelude::*;
-use bevy_mod_picking::events::Pointer;
-use bevy_mod_picking::PointerBundle;
 
 pub struct MenuPlugin;
 

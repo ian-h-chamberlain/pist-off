@@ -5,6 +5,7 @@ mod highlight;
 use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
+use bevy_mod_picking::highlight::{DefaultHighlightingPlugin, HighlightPluginSettings};
 use bevy_mod_picking::{
     highlight::HighlightPlugin as PickingHighlightPlugin, DefaultPickingPlugins,
 };
@@ -30,8 +31,7 @@ impl Plugin for CubePlugin {
                 DefaultPickingPlugins
                     .build()
                     // disable the default material based highlighting
-                    .disable::<PickingHighlightPlugin<StandardMaterial>>()
-                    .disable::<PickingHighlightPlugin<ColorMaterial>>(),
+                    .disable::<DefaultHighlightingPlugin>(),
             )
             .add_plugins((ActivatePlugin, GraphPlugin, HighlightPlugin))
             .add_systems(

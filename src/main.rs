@@ -3,6 +3,7 @@
 
 use std::io::Cursor;
 
+use bevy::asset::AssetMetaCheck;
 use bevy::log::{Level, LogPlugin};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -24,6 +25,8 @@ fn main() {
 
     App::new()
         .insert_resource(Msaa::Sample4)
+        // https://github.com/bevyengine/bevy/issues/10157
+        .insert_resource(AssetMetaCheck::Never)
         .insert_resource(ClearColor(Color::rgb(0.91, 0.76, 0.45)))
         .add_plugins((
             DefaultPlugins

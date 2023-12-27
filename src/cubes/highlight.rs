@@ -4,7 +4,9 @@ use bevy::ui::FocusPolicy;
 use bevy_mod_outline::{
     AutoGenerateOutlineNormalsPlugin, OutlineBundle, OutlinePlugin, OutlineStencil, OutlineVolume,
 };
-use bevy_mod_picking::highlight::{GlobalHighlight, HighlightPlugin as PickingHighlightPlugin};
+use bevy_mod_picking::highlight::{
+    GlobalHighlight, HighlightPlugin as PickingHighlightPlugin, HighlightPluginSettings,
+};
 use bevy_mod_picking::picking_core::Pickable;
 use bevy_mod_picking::PickableBundle;
 
@@ -26,6 +28,7 @@ pub enum Highlight {
 impl Plugin for HighlightPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<Highlight>()
+            .insert_resource(HighlightPluginSettings::default())
             .add_plugins((
                 PickingHighlightPlugin::<Highlight> {
                     highlighting_default: |mut assets| GlobalHighlight {

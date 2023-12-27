@@ -31,11 +31,11 @@ fn activate_selected_block(
     mut blocks: Query<&mut Block>,
     mut selected_events: EventReader<Pointer<Click>>,
 ) {
-    for evt in selected_events.iter() {
+    for evt in selected_events.read() {
         let ent = evt.target;
-        let mut block = blocks
-            .get_mut(ent)
-            .expect("only Blocks should be selectable");
+        let Ok(mut block) = blocks.get_mut(ent) else {
+            continue;
+        };
 
         // TODO: probably don't allow toggling blocks "out of place", or at least reconsider it
         block.state.toggle();

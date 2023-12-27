@@ -44,18 +44,20 @@ default = [
     "bevy/bevy_sprite",
     "bevy/bevy_text",
     "bevy/bevy_ui",
+    "bevy/multi-threaded",
     "bevy/png",
     "bevy/jpeg",
     "bevy/hdr",
     "bevy/zstd",
     "bevy/x11",
     "bevy/ktx2",
-    "bevy/file_watcher",
+    # "bevy/file_watcher",
     "bevy/tonemapping_luts",
+    "bevy/webgl2",
 ]
 
 [dependencies]
-bevy = { version = "0.12", default-features = false }
+bevy = { version = "0.12.1", default-features = false }
 bevy_asset_loader = { version = "0.19" }
 rand = { version = "0.8.3" }
 bevy_mod_picking = "0.17.0"

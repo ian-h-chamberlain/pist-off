@@ -128,7 +128,7 @@ pub fn propagate_block_toggles(
 
     let mut event_reader = events.p0();
 
-    for toggled in event_reader.iter() {
+    for toggled in event_reader.read() {
         // moving a block out of place doesn't affect anything
         if toggled.state == BlockState::InPosition {
             let affected_blocks = match mode {
