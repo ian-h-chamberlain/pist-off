@@ -17,8 +17,8 @@ impl Plugin for PlayerPlugin {
             color: Color::BEIGE,
             brightness: 0.1,
         })
-        .add_system(spawn_light.in_schedule(OnEnter(GameState::Playing)))
-        .add_system(rotate_camera.in_set(OnUpdate(GameState::Playing)));
+        .add_systems(OnEnter(GameState::Playing), spawn_light)
+        .add_systems(Update, rotate_camera.run_if(in_state(GameState::Playing)));
     }
 }
 
@@ -54,7 +54,9 @@ fn rotate_camera(
     cube: Query<&Transform, With<CubeFrame>>,
     mut camera: Query<&mut Transform, (With<Camera>, Without<CubeFrame>)>,
 ) {
-    let Some(rotation) = actions.player_rotation else { return };
+    let Some(rotation) = actions.player_rotation else {
+        return;
+    };
 
     let speed = tweak!(0.4);
 

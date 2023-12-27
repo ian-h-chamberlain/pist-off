@@ -12,15 +12,19 @@ pub struct LevelPlugin;
 
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(win_condition.in_set(OnUpdate(GameState::Playing)))
-            .add_system(reset_level.in_schedule(OnEnter(GameState::Reset)))
-            .add_system(cleanup_continue.in_schedule(OnExit(GameState::Reset)))
-            .add_system(setup_buttons.in_schedule(OnEnter(GameState::Reset)))
-            .add_system(click_continue.in_set(OnUpdate(GameState::Reset)));
+        app.add_systems(
+            Update,
+            (
+                win_condition.run_if(in_state(GameState::Playing)),
+                click_continue.run_if(in_state(GameState::Reset)),
+            ),
+        )
+        .add_systems(OnEnter(GameState::Reset), (reset_level, setup_buttons))
+        .add_systems(OnExit(GameState::Reset), cleanup_continue);
 
         // "quitting" kinda just crashes the app in wasm, let's not do that
         #[cfg(not(target_family = "wasm"))]
-        app.add_system(click_quit.in_set(OnUpdate(GameState::Reset)));
+        app.add_systems(Update, click_quit.run_if(in_state(GameState::Reset)));
     }
 }
 
@@ -73,7 +77,8 @@ fn setup_buttons(
     commands
         .spawn(NodeBundle {
             style: Style {
-                size: Size::new(Val::Px(350.0), Val::Px(125.0)),
+                width: Val::Px(350.0),
+                height: Val::Px(125.0),
                 flex_direction: FlexDirection::Column,
                 ..style.clone()
             },
@@ -88,7 +93,8 @@ fn setup_buttons(
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Px(350.0), Val::Px(50.0)),
+                        width: Val::Px(350.0),
+                        height: Val::Px(50.0),
                         flex_direction: FlexDirection::Row,
                         ..style
                     },
@@ -105,7 +111,8 @@ fn spawn_buttons(
 ) {
     let button = ButtonBundle {
         style: Style {
-            size: Size::new(Val::Px(150.0), Val::Px(50.0)),
+            width: Val::Px(150.0),
+            height: Val::Px(50.0),
             margin: UiRect::all(Val::Auto),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
@@ -149,7 +156,7 @@ fn click_continue(
     mut continue_interaction: Query<&Interaction, (Changed<Interaction>, With<ContinueButton>)>,
 ) {
     for interaction in &mut continue_interaction {
-        if let Interaction::Clicked = *interaction {
+        if let Interaction::Pressed = *interaction {
             state.set(GameState::Playing);
         }
     }
@@ -161,7 +168,7 @@ fn click_quit(
     mut quit: EventWriter<AppExit>,
 ) {
     for interaction in &mut quit_interaction {
-        if let Interaction::Clicked = *interaction {
+        if let Interaction::Pressed = *interaction {
             quit.send(AppExit);
         }
     }

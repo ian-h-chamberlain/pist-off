@@ -41,21 +41,23 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<GameState>()
-            .add_plugin(LoadingPlugin)
-            .add_plugin(MenuPlugin)
-            .add_plugin(LevelPlugin)
-            .add_plugin(ActionsPlugin)
-            .add_plugin(CubePlugin)
-            .add_plugin(PlayerPlugin);
+        app.add_state::<GameState>().add_plugins((
+            LoadingPlugin,
+            MenuPlugin,
+            LevelPlugin,
+            ActionsPlugin,
+            CubePlugin,
+            PlayerPlugin,
+        ));
 
         #[cfg(debug_assertions)]
         {
-            app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-                .add_plugin(LogDiagnosticsPlugin::default())
-                // TODO: pause and/or proper quit menu
-                .add_system(bevy::window::close_on_esc)
-                .add_system(level::skip_level);
+            app.add_plugins((
+                FrameTimeDiagnosticsPlugin::default(),
+                LogDiagnosticsPlugin::default(),
+            ))
+            // TODO: pause and/or proper quit menu
+            .add_systems(Update, (bevy::window::close_on_esc, level::skip_level));
         }
     }
 }

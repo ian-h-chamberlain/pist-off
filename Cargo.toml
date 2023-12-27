@@ -28,7 +28,7 @@ inherits = "release"
 lto = "thin"
 
 [features]
-dev = ["bevy/bevy_dylib"]
+dev = ["bevy/dynamic_linking"]
 
 # Bevy defaults minus audio and some other not needed things
 # see https://github.com/bevyengine/bevy/blob/main/Cargo.toml#L31-L54
@@ -50,16 +50,16 @@ default = [
     "bevy/zstd",
     "bevy/x11",
     "bevy/ktx2",
-    "bevy/filesystem_watcher",
+    "bevy/file_watcher",
     "bevy/tonemapping_luts",
 ]
 
 [dependencies]
-bevy = { version = "0.10", default-features = false }
-bevy_asset_loader = { version = "0.15" }
+bevy = { version = "0.12", default-features = false }
+bevy_asset_loader = { version = "0.19" }
 rand = { version = "0.8.3" }
-bevy_mod_picking = "0.12.0"
-bevy_mod_outline = "0.4.0"
+bevy_mod_picking = "0.17.0"
+bevy_mod_outline = "0.6.0"
 
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.28", default-features = false }

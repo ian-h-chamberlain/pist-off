@@ -12,7 +12,10 @@ pub struct GraphPlugin;
 
 impl Plugin for GraphPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(propagate_block_toggles.in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(
+            Update,
+            propagate_block_toggles.run_if(in_state(GameState::Playing)),
+        );
     }
 }
 
@@ -66,7 +69,9 @@ impl EntityGraph {
     }
 
     fn children(&self, block: Entity) -> Vec<Entity> {
-        let Some(node) = self.nodes.get(&block) else { return Vec::new() };
+        let Some(node) = self.nodes.get(&block) else {
+            return Vec::new();
+        };
         node.children(&self.arena)
             .map(|node| self.arena.get(node).unwrap().get())
             .copied()

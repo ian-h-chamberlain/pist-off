@@ -5,7 +5,9 @@ mod highlight;
 use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
-use bevy_mod_picking::{CustomHighlightPlugin, DefaultPickingPlugins};
+use bevy_mod_picking::{
+    highlight::HighlightPlugin as PickingHighlightPlugin, DefaultPickingPlugins,
+};
 use rand::seq::SliceRandom;
 
 use crate::cubes::highlight::{HighlightableBundle, UnpickableBundle};
@@ -28,13 +30,12 @@ impl Plugin for CubePlugin {
                 DefaultPickingPlugins
                     .build()
                     // disable the default material based highlighting
-                    .disable::<CustomHighlightPlugin<StandardMaterial>>()
-                    .disable::<CustomHighlightPlugin<ColorMaterial>>(),
+                    .disable::<PickingHighlightPlugin<StandardMaterial>>()
+                    .disable::<PickingHighlightPlugin<ColorMaterial>>(),
             )
-            .add_plugin(ActivatePlugin)
-            .add_plugin(GraphPlugin)
-            .add_plugin(HighlightPlugin)
-            .add_system(
+            .add_plugins((ActivatePlugin, GraphPlugin, HighlightPlugin))
+            .add_systems(
+                Update,
                 spawn_cuby
                     .pipe(activation::prepare_animations)
                     .pipe(graph::build_graph)
@@ -46,11 +47,7 @@ impl Plugin for CubePlugin {
                         ),
                     ),
             )
-            .add_system(
-                show_cuby
-                    .after(spawn_cuby)
-                    .in_schedule(OnEnter(GameState::Playing)),
-            );
+            .add_systems(OnEnter(GameState::Playing), show_cuby.after(spawn_cuby));
     }
 }
 

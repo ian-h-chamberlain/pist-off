@@ -1,6 +1,6 @@
 use bevy::log;
 use bevy::prelude::*;
-use bevy_mod_picking::PickingEvent;
+use bevy_mod_picking::prelude::*;
 
 use crate::GameState;
 
@@ -12,34 +12,34 @@ impl Plugin for ActivatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AnimationClips>()
             .add_event::<ToggleEvent>()
-            .add_system(
-                activate_selected_block
-                    .in_base_set(CoreSet::PostUpdate)
+            .add_systems(
+                PostUpdate,
+                activate_selected_block.run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(
+                Update,
+                (
+                    animate_toggled_blocks.after(super::spawn_cuby),
+                    fire_toggle_timers,
+                )
                     .run_if(in_state(GameState::Playing)),
-            )
-            .add_system(
-                animate_toggled_blocks
-                    .after(super::spawn_cuby)
-                    .in_set(OnUpdate(GameState::Playing)),
-            )
-            .add_system(fire_toggle_timers.in_set(OnUpdate(GameState::Playing)));
+            );
     }
 }
 
 fn activate_selected_block(
     mut blocks: Query<&mut Block>,
-    mut selected_events: EventReader<PickingEvent>,
+    mut selected_events: EventReader<Pointer<Click>>,
 ) {
-    for evt in &mut selected_events {
-        if let &PickingEvent::Clicked(ent) = evt {
-            let mut block = blocks
-                .get_mut(ent)
-                .expect("only Blocks should be selectable");
+    for evt in selected_events.iter() {
+        let ent = evt.target;
+        let mut block = blocks
+            .get_mut(ent)
+            .expect("only Blocks should be selectable");
 
-            // TODO: probably don't allow toggling blocks "out of place", or at least reconsider it
-            block.state.toggle();
-            log::info!("block {ent:?} toggled to {:?}", block.state);
-        }
+        // TODO: probably don't allow toggling blocks "out of place", or at least reconsider it
+        block.state.toggle();
+        log::info!("block {ent:?} toggled to {:?}", block.state);
     }
 }
 
@@ -144,7 +144,7 @@ fn animate_toggled_blocks(
         let elapsed = player.elapsed().min(clip.duration);
         player
             .play(clip.handle.clone())
-            .set_elapsed(clip.duration - elapsed);
+            .seek_to(clip.duration - elapsed);
 
         let duration = clip.duration - player.elapsed();
         *timer = ToggleTimer(Timer::from_seconds(duration.max(0.0), TimerMode::Once));
@@ -152,6 +152,7 @@ fn animate_toggled_blocks(
 }
 
 /// Indicates a block has finished its trajectory to the given state.
+#[derive(Event)]
 pub struct ToggleEvent {
     pub state: BlockState,
     pub block: Entity,

@@ -25,7 +25,7 @@ fn main() {
     App::new()
         .insert_resource(Msaa::Sample4)
         .insert_resource(ClearColor(Color::rgb(0.91, 0.76, 0.45)))
-        .add_plugins(
+        .add_plugins((
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
@@ -37,9 +37,9 @@ fn main() {
                     ..default()
                 })
                 .set(log_plugin),
-        )
-        .add_plugin(GamePlugin)
-        .add_system(set_window_icon.on_startup())
+            GamePlugin,
+        ))
+        .add_systems(Startup, set_window_icon)
         .run();
 }
 

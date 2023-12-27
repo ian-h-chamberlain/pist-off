@@ -1,7 +1,8 @@
 use crate::loading::FontAssets;
 use crate::GameState;
 use bevy::prelude::*;
-use bevy_mod_picking::PickingCameraBundle;
+use bevy_mod_picking::events::Pointer;
+use bevy_mod_picking::PointerBundle;
 
 pub struct MenuPlugin;
 
@@ -10,10 +11,15 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ButtonColors>()
-            .add_system(setup_menu.in_schedule(OnEnter(GameState::Menu)))
-            .add_system(click_play_button.in_set(OnUpdate(GameState::Menu)))
-            .add_system(color_buttons.in_base_set(CoreSet::Update))
-            .add_system(cleanup_menu.in_schedule(OnExit(GameState::Menu)));
+            .add_systems(OnEnter(GameState::Menu), setup_menu)
+            .add_systems(
+                Update,
+                (
+                    color_buttons,
+                    click_play_button.run_if(in_state(GameState::Menu)),
+                ),
+            )
+            .add_systems(OnExit(GameState::Menu), cleanup_menu);
     }
 }
 
@@ -40,24 +46,23 @@ fn setup_menu(
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
-    commands
-        .spawn(Camera3dBundle {
-            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            camera: Camera {
-                order: -10,
-                is_active: true,
-                ..default()
-            },
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        camera: Camera {
+            order: -10,
+            is_active: true,
             ..default()
-        })
-        .insert(PickingCameraBundle::default());
+        },
+        ..default()
+    });
 
     commands
         .spawn((
             PlayButton,
             ButtonBundle {
                 style: Style {
-                    size: Size::new(Val::Px(120.0), Val::Px(50.0)),
+                    width: Val::Px(120.0),
+                    height: Val::Px(50.0),
                     margin: UiRect::all(Val::Auto),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
@@ -97,7 +102,7 @@ fn click_play_button(
     mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<PlayButton>)>,
 ) {
     for interaction in &mut interaction_query {
-        if let Interaction::Clicked = *interaction {
+        if let Interaction::Pressed = *interaction {
             state.set(GameState::Playing);
         }
     }
