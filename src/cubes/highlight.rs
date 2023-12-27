@@ -54,10 +54,6 @@ impl Default for HighlightableBundle {
                 },
                 stencil: OutlineStencil {
                     enabled: true,
-                    // Try to fix some weird artifacting that only shows up on web.
-                    // this doesn't quite fix it but helps a little I guess
-                    #[cfg(target_family = "wasm")]
-                    offset: 3.0,
                     ..default()
                 },
                 ..default()

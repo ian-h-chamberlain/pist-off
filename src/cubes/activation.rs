@@ -30,7 +30,7 @@ fn activate_selected_block(
     mut blocks: Query<&mut Block>,
     mut selected_events: EventReader<PickingEvent>,
 ) {
-    for evt in selected_events.iter() {
+    for evt in &mut selected_events {
         if let &PickingEvent::Clicked(ent) = evt {
             let mut block = blocks
                 .get_mut(ent)
@@ -102,7 +102,7 @@ pub fn prepare_animations(
     };
 
     for &block in &blocks {
-        log::trace!("building animation for block {block:?}");
+        log::debug!("building animation for block {block:?}");
 
         let mut player = AnimationPlayer::default();
         player.play(anim_clips.out_of_place.handle.clone());

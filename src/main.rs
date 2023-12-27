@@ -3,6 +3,7 @@
 
 use std::io::Cursor;
 
+use bevy::log::{Level, LogPlugin};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy::winit::WinitWindows;
@@ -12,18 +13,31 @@ use winit::window::Icon;
 use pist_off::GamePlugin;
 
 fn main() {
+    let log_plugin = if cfg!(debug_assertions) {
+        LogPlugin {
+            level: Level::DEBUG,
+            filter: String::from("pist_off=debug,bevy=info,wgpu=error,naga=error"),
+        }
+    } else {
+        LogPlugin::default()
+    };
+
     App::new()
-        .insert_resource(Msaa::Sample2)
+        .insert_resource(Msaa::Sample4)
         .insert_resource(ClearColor(Color::rgb(0.91, 0.76, 0.45)))
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Pist Off".to_string(),
-                resolution: (800.0, 600.0).into(),
-                canvas: Some("#bevy".to_owned()),
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Pist Off".to_string(),
+                        resolution: (800.0, 600.0).into(),
+                        canvas: Some("#bevy".to_owned()),
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(log_plugin),
+        )
         .add_plugin(GamePlugin)
         .add_system(set_window_icon.on_startup())
         .run();

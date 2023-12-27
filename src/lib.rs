@@ -29,12 +29,12 @@ enum GameState {
     // During the loading State the LoadingPlugin will load our assets
     #[default]
     Loading,
+    /// Here the menu is drawn and waiting for player interaction
+    Menu,
     /// During this State the actual game logic is executed
     Playing,
     /// The level is complete and being prepared for the next level.
     Reset,
-    /// Here the menu is drawn and waiting for player interaction
-    Menu,
 }
 
 pub struct GamePlugin;

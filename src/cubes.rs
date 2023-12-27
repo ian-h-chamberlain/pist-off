@@ -38,7 +38,17 @@ impl Plugin for CubePlugin {
                 spawn_cuby
                     .pipe(activation::prepare_animations)
                     .pipe(graph::build_graph)
-                    .in_base_set(CoreSet::PreUpdate)
+                    // This seems more complicated but I think it's the simplest way to
+                    // run "in multiple schedules". It seems to work how I want anyway...
+                    .run_if(
+                        state_changed::<GameState>().and_then(
+                            in_state(GameState::Menu).or_else(in_state(GameState::Reset)),
+                        ),
+                    ),
+            )
+            .add_system(
+                show_cuby
+                    .after(spawn_cuby)
                     .in_schedule(OnEnter(GameState::Playing)),
             );
     }
@@ -160,6 +170,7 @@ fn spawn_cuby(
             CubeFrame,
             SceneBundle {
                 scene: root.named_scenes["Scene"].clone(),
+                visibility: Visibility::Hidden,
                 ..default()
             },
             UnpickableBundle::default(),
@@ -167,6 +178,10 @@ fn spawn_cuby(
         .add_child(middleman);
 
     (blocks, block_scale)
+}
+
+fn show_cuby(mut query: Query<&mut Visibility, With<CubeFrame>>) {
+    *query.single_mut() = Visibility::Visible;
 }
 
 fn spawn_blocks(
@@ -231,8 +246,6 @@ fn spawn_blocks(
                 let transform = Transform::from_translation(translation)
                     .looking_to(out_direction, up_direction);
 
-                log::debug!("spawning block {block:?} at {transform:?}");
-
                 parent
                     .spawn(
                         // use an intermediate transform bundle so we keep the
@@ -261,6 +274,8 @@ fn spawn_blocks(
                         } else {
                             let block_id =
                                 block_cmd.insert(BlockBundle { block, ..default() }).id();
+
+                            log::debug!("spawning block {block_id:?} at {transform:?}");
 
                             ids.push(block_id);
                         }
