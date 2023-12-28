@@ -51,7 +51,6 @@ default = [
     "bevy/zstd",
     "bevy/x11",
     "bevy/ktx2",
-    # "bevy/file_watcher",
     "bevy/tonemapping_luts",
     "bevy/webgl2",
 ]
