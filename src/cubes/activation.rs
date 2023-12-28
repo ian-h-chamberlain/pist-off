@@ -13,16 +13,16 @@ impl Plugin for ActivatePlugin {
         app.init_resource::<AnimationClips>()
             .add_event::<ToggleEvent>()
             .add_systems(
-                PostUpdate,
-                activate_selected_block.run_if(in_state(GameState::Playing)),
-            )
-            .add_systems(
                 Update,
                 (
                     animate_toggled_blocks.after(super::spawn_cuby),
                     fire_toggle_timers,
                 )
                     .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(
+                PostUpdate,
+                activate_selected_block.run_if(in_state(GameState::Playing)),
             );
     }
 }
@@ -125,29 +125,37 @@ impl Default for ToggleTimer {
 }
 
 fn animate_toggled_blocks(
-    mut blocks: Query<(Entity, &mut AnimationPlayer, Ref<Block>, &mut ToggleTimer), Changed<Block>>,
+    mut blocks: Query<(Entity, &mut AnimationPlayer, Ref<Block>, &mut ToggleTimer)>,
     clips: Res<AnimationClips>,
 ) {
     for (ent, mut player, block, mut timer) in &mut blocks {
-        // blocks that just spawned already have their animation playing
-        if block.is_added() {
-            continue;
-        }
-
-        log::debug!("playing anim {:?} on block {ent:?}", block.state);
-
         let clip = match block.state {
             BlockState::OutOfPlace => &clips.out_of_place,
             BlockState::InPosition => &clips.in_position,
         };
 
-        let elapsed = player.elapsed().min(clip.duration);
-        player
-            .play(clip.handle.clone())
-            .seek_to(clip.duration - elapsed);
+        if !block.is_changed() || block.is_added() {
+            // TODO: maybe this can be a way to fix the "blocks don't animate on level load" bug?
+            // Right now it seems to make the animation instant instead of smooth, though.
+            if (timer.paused() || timer.finished()) && !player.is_finished() {
+                // log::debug!(
+                //     "block {ent:?} timer is inactive, current anim: ({:?}). Seeking to {:?}",
+                //     player.seek_time(),
+                //     clip.duration,
+                // );
 
-        let duration = clip.duration - player.elapsed();
-        *timer = ToggleTimer(Timer::from_seconds(duration.max(0.0), TimerMode::Once));
+                // player.start(clip.handle.clone()).seek_to(clip.duration);
+            }
+
+            continue;
+        }
+
+        log::debug!("playing anim {:?} on block {ent:?}", block.state);
+
+        let new_seek_time = (clip.duration - player.seek_time()).clamp(0.0, clip.duration);
+        player.play(clip.handle.clone()).seek_to(new_seek_time);
+
+        *timer = ToggleTimer(Timer::from_seconds(new_seek_time, TimerMode::Once));
     }
 }
 
