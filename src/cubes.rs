@@ -5,10 +5,8 @@ mod highlight;
 use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
-use bevy_mod_picking::highlight::{DefaultHighlightingPlugin};
-use bevy_mod_picking::{
-    DefaultPickingPlugins,
-};
+use bevy_mod_picking::highlight::DefaultHighlightingPlugin;
+use bevy_mod_picking::DefaultPickingPlugins;
 use rand::seq::SliceRandom;
 
 use crate::cubes::highlight::{HighlightableBundle, UnpickableBundle};
