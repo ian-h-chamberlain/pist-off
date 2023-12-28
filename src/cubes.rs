@@ -5,9 +5,9 @@ mod highlight;
 use bevy::gltf::Gltf;
 use bevy::log;
 use bevy::prelude::*;
-use bevy_mod_picking::highlight::{DefaultHighlightingPlugin, HighlightPluginSettings};
+use bevy_mod_picking::highlight::{DefaultHighlightingPlugin};
 use bevy_mod_picking::{
-    highlight::HighlightPlugin as PickingHighlightPlugin, DefaultPickingPlugins,
+    DefaultPickingPlugins,
 };
 use rand::seq::SliceRandom;
 

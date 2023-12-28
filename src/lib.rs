@@ -53,7 +53,7 @@ impl Plugin for GamePlugin {
         #[cfg(debug_assertions)]
         {
             app.add_plugins((
-                FrameTimeDiagnosticsPlugin::default(),
+                FrameTimeDiagnosticsPlugin,
                 LogDiagnosticsPlugin::default(),
             ))
             // TODO: pause and/or proper quit menu

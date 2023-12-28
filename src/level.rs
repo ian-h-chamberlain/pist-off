@@ -33,7 +33,7 @@ fn win_condition(
     mut events: EventReader<ToggleEvent>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    if events.iter().all(|evt| evt.state != BlockState::InPosition) {
+    if events.read().all(|evt| evt.state != BlockState::InPosition) {
         return;
     }
 

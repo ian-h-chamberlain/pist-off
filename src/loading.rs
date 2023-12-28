@@ -14,8 +14,11 @@ impl Plugin for LoadingPlugin {
         app.add_loading_state(
             LoadingState::new(GameState::Loading).continue_to_state(GameState::Menu),
         )
-        .add_collection_to_loading_state::<_, FontAssets>(GameState::Loading)
-        .add_collection_to_loading_state::<_, GLTFAssets>(GameState::Loading);
+        .configure_loading_state(
+            LoadingStateConfig::new(GameState::Loading)
+                .load_collection::<FontAssets>()
+                .load_collection::<GLTFAssets>(),
+        );
     }
 }
 
