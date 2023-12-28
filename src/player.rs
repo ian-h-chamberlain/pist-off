@@ -65,7 +65,8 @@ fn rotate_camera(
     for cube_transform in &cube {
         for mut camera_transform in &mut camera {
             // TODO: option for inverting the arrow controls? Click+drag would
-            // be much easier at the end of the day but trickier to implement
+            // be much easier at the end of the day but trickier to implement.
+            // Maybe easier with newer bevy_mod_picking now?
             let rotation = Quat::from_axis_angle(camera_transform.local_y(), -rotation.x * rpms)
                 * Quat::from_axis_angle(camera_transform.local_x(), rotation.y * rpms);
 

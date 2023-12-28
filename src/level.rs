@@ -33,11 +33,12 @@ fn win_condition(
     mut events: EventReader<ToggleEvent>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    if events.read().all(|evt| evt.state != BlockState::InPosition) {
+    if events.read().any(|evt| evt.state != BlockState::InPosition) {
         return;
     }
 
-    // TODO: maybe add even more of a slight delay ?
+    // TODO: maybe add a slight delay? I was going to try player.is_finished()
+    // to wait until the animation is done but it seems like it doesn't work quite how I expected...
     if blocks
         .iter()
         .all(|block| block.state == BlockState::InPosition)
