@@ -1,6 +1,6 @@
 use bevy::log;
 use bevy::prelude::*;
-use bevy_mod_picking::prelude::{Click, Pointer};
+use bevy_mod_picking::events::{Click, Pointer};
 
 use crate::GameState;
 

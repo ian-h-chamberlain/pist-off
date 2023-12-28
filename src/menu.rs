@@ -1,6 +1,7 @@
 use crate::loading::FontAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy_mod_picking::picking_core::Pickable;
 
 pub struct MenuPlugin;
 
@@ -57,6 +58,11 @@ fn setup_menu(
     commands
         .spawn((
             PlayButton,
+            // Prevent clicks from passing through the button after clicking it
+            Pickable {
+                should_block_lower: true,
+                should_emit_events: false,
+            },
             ButtonBundle {
                 style: Style {
                     width: Val::Px(120.0),
@@ -75,6 +81,7 @@ fn setup_menu(
         });
 }
 
+#[allow(clippy::type_complexity)]
 fn color_buttons(
     button_colors: Res<ButtonColors>,
     mut interaction_query: Query<

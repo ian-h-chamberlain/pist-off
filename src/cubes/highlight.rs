@@ -51,7 +51,7 @@ impl Plugin for HighlightPlugin {
 pub struct HighlightableBundle {
     pub pickable: PickableBundle,
     pub outline: OutlineBundle,
-    pub highlight_type: Handle<Highlight>,
+    pub highlight: Handle<Highlight>,
 }
 
 impl Default for HighlightableBundle {
@@ -69,7 +69,7 @@ impl Default for HighlightableBundle {
                 ..default()
             },
             pickable: default(),
-            highlight_type: default(),
+            highlight: default(),
         }
     }
 }
@@ -101,27 +101,26 @@ fn set_highlighted_outlines(
     mut outlinables: Query<(&Handle<Highlight>, &mut OutlineVolume, &Block, &ToggleTimer)>,
 ) {
     for (highlight, mut outline, block, timer) in &mut outlinables {
-        match assets.get(highlight) {
-            Some(Highlight::Selected | Highlight::Hovered)
-                if !timer.paused() && !timer.finished() =>
-            {
-                outline.colour = Color::BLUE;
-                outline.visible = true;
+        let Some(highlight) = assets.get(highlight) else {
+            outline.visible = false;
+            continue;
+        };
+
+        outline.visible = true;
+
+        outline.colour = match highlight {
+            Highlight::Pressed => Color::BLUE,
+            Highlight::Hovered | Highlight::Selected if !timer.paused() && !timer.finished() => {
+                Color::BLUE
             }
-            Some(Highlight::Hovered) => {
-                outline.colour = match block.state {
-                    BlockState::OutOfPlace => Color::RED,
-                    BlockState::InPosition => Color::GREEN,
-                };
-                outline.visible = true;
-            }
-            Some(Highlight::Pressed) => {
-                outline.colour = Color::BLUE;
-                outline.visible = true;
-            }
-            _ => {
+            Highlight::Hovered => match block.state {
+                BlockState::OutOfPlace => Color::RED,
+                BlockState::InPosition => Color::GREEN,
+            },
+            Highlight::Selected => {
                 outline.visible = false;
+                continue;
             }
-        }
+        };
     }
 }
