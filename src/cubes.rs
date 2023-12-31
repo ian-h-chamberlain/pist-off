@@ -35,7 +35,6 @@ impl Plugin for CubePlugin {
             .add_systems(
                 Update,
                 spawn_cuby
-                    .pipe(activation::prepare_animations)
                     .pipe(graph::build_graph)
                     // This seems more complicated but I think it's the simplest way to
                     // run "in multiple schedules". It seems to work how I want anyway...
@@ -141,13 +140,12 @@ fn spawn_cuby(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     block_count: Res<BlockCount>,
-) -> (Vec<Entity>, f32) {
+) -> Vec<Entity> {
     let root = gltf_assets.get(&gltf.cuby).unwrap();
 
     let cube = meshes.add(shape::Cube::default().into());
 
     let mut blocks = Vec::new();
-    let mut block_scale = 0.0;
 
     // use a parent entity to make it simpler to scale down the inner cubes
     let middleman = commands
@@ -156,7 +154,7 @@ fn spawn_cuby(
             ..default()
         })
         .with_children(|parent| {
-            (blocks, block_scale) = spawn_blocks(parent, cube, &mut materials, block_count);
+            blocks = spawn_blocks(parent, cube, &mut materials, block_count);
         })
         .id();
 
@@ -172,7 +170,7 @@ fn spawn_cuby(
         ))
         .add_child(middleman);
 
-    (blocks, block_scale)
+    blocks
 }
 
 fn show_cuby(mut query: Query<&mut Visibility, With<CubeFrame>>) {
@@ -184,7 +182,7 @@ fn spawn_blocks(
     cube_mesh: Handle<Mesh>,
     materials: &mut Assets<StandardMaterial>,
     block_count: Res<BlockCount>,
-) -> (Vec<Entity>, f32) {
+) -> Vec<Entity> {
     let mut ids = Vec::new();
 
     let num_cubes_per_axis = block_count.0;
@@ -280,7 +278,7 @@ fn spawn_blocks(
         }
     }
 
-    (ids, cube_scale)
+    ids
 }
 
 fn gen_combinations(cubes_per_axis: i16) -> impl Iterator<Item = i16> {

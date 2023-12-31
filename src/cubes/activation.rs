@@ -1,5 +1,6 @@
 use bevy::log;
 use bevy::prelude::*;
+use bevy::utils::Duration;
 use bevy_mod_picking::events::{Click, Pointer};
 
 use crate::GameState;
@@ -10,12 +11,16 @@ pub struct ActivatePlugin;
 
 impl Plugin for ActivatePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<AnimationClips>()
+        app.init_resource::<ToggleAnimation>()
             .add_event::<ToggleEvent>()
+            .add_systems(OnEnter(GameState::Playing), prepare_animations)
             .add_systems(
                 Update,
                 (
-                    animate_toggled_blocks.after(super::spawn_cuby),
+                    (start_animations, animate_toggled_blocks)
+                        .chain()
+                        .after(super::spawn_cuby)
+                        .after(prepare_animations),
                     fire_toggle_timers,
                 )
                     .run_if(in_state(GameState::Playing)),
@@ -43,74 +48,59 @@ fn activate_selected_block(
     }
 }
 
-#[derive(Default)]
-pub struct AnimationClipHandle {
-    pub handle: Handle<AnimationClip>,
-    pub duration: f32,
-}
-
 #[derive(Default, Resource)]
-pub struct AnimationClips {
-    pub out_of_place: AnimationClipHandle,
-    pub in_position: AnimationClipHandle,
-}
+pub struct ToggleAnimation(Handle<AnimationClip>);
 
 pub fn prepare_animations(
-    In((blocks, block_scale)): In<(Vec<Entity>, f32)>,
-    mut commands: Commands,
     mut animations: ResMut<Assets<AnimationClip>>,
-    mut anim_clips: ResMut<AnimationClips>,
-) -> Vec<Entity> {
-    log::info!("setting up animations for {} blocks", blocks.len());
-
-    let block_name = Name::new("block");
-
-    let extrude_distance = 0.75 * block_scale;
+    mut toggle_anim: ResMut<ToggleAnimation>,
+) {
+    const DISTANCE: f32 = 0.75;
+    const DURATION: f32 = 0.3;
 
     let mut clip = AnimationClip::default();
     clip.add_curve_to_path(
         EntityPath {
-            parts: vec![block_name.clone()],
+            parts: vec![block_name()],
         },
         VariableCurve {
-            keyframe_timestamps: vec![0.0, 0.3],
+            keyframe_timestamps: vec![0.0, DURATION],
             // Just animate going "forward" by one unit, KISS
-            keyframes: Keyframes::Translation(vec![Vec3::ZERO, extrude_distance * -Vec3::Z]),
+            keyframes: Keyframes::Translation(vec![Vec3::ZERO, DISTANCE * -Vec3::Z]),
         },
     );
 
-    anim_clips.out_of_place = AnimationClipHandle {
-        duration: clip.duration(),
-        handle: animations.add(clip),
-    };
+    toggle_anim.0 = animations.add(clip);
 
-    let mut clip = AnimationClip::default();
-    clip.add_curve_to_path(
-        EntityPath {
-            parts: vec![block_name.clone()],
-        },
-        VariableCurve {
-            keyframe_timestamps: vec![0.0, 0.3],
-            // Just animate going "backward" by one unit, KISS
-            keyframes: Keyframes::Translation(vec![extrude_distance * -Vec3::Z, Vec3::ZERO]),
-        },
-    );
+    log::info!("Built animation clips for blocks");
+}
 
-    anim_clips.in_position = AnimationClipHandle {
-        duration: clip.duration(),
-        handle: animations.add(clip),
-    };
+fn block_name() -> Name {
+    Name::new("block")
+}
 
-    for &block in &blocks {
-        log::debug!("building animation for block {block:?}");
-
-        let mut player = AnimationPlayer::default();
-        player.play(anim_clips.out_of_place.handle.clone());
-
-        commands.entity(block).insert((player, block_name.clone()));
+pub fn start_animations(
+    mut commands: Commands,
+    blocks: Query<Entity, Added<Block>>,
+    animations: Res<Assets<AnimationClip>>,
+    toggle_anim: Res<ToggleAnimation>,
+) {
+    // wait for prepare_animations to run before we try to add animations
+    if animations.is_empty() {
+        return;
     }
 
-    blocks
+    for block in &blocks {
+        log::debug!("starting animation for block {block:?}");
+
+        let handle = toggle_anim.0.clone();
+        let clip = animations.get(&handle).unwrap();
+
+        let mut player = AnimationPlayer::default();
+        player.start(handle).seek_to(clip.duration());
+
+        commands.entity(block).insert((player, block_name()));
+    }
 }
 
 #[derive(Component, DerefMut, Deref)]
@@ -125,37 +115,35 @@ impl Default for ToggleTimer {
 }
 
 fn animate_toggled_blocks(
-    mut blocks: Query<(Entity, &mut AnimationPlayer, Ref<Block>, &mut ToggleTimer)>,
-    clips: Res<AnimationClips>,
+    mut blocks: Query<(Entity, &mut AnimationPlayer, &Block, &mut ToggleTimer), Changed<Block>>,
+    toggle_anim: Res<ToggleAnimation>,
+    clips: Res<Assets<AnimationClip>>,
 ) {
     for (ent, mut player, block, mut timer) in &mut blocks {
-        let clip = match block.state {
-            BlockState::OutOfPlace => &clips.out_of_place,
-            BlockState::InPosition => &clips.in_position,
+        let handle = toggle_anim.0.clone();
+        let clip = clips.get(&handle).unwrap();
+
+        let (duration, speed) = match block.state {
+            BlockState::OutOfPlace => (clip.duration() - player.seek_time(), 1.0),
+            BlockState::InPosition => (player.seek_time(), -1.0),
         };
 
-        if !block.is_changed() || block.is_added() {
-            // TODO: maybe this can be a way to fix the "blocks don't animate on level load" bug?
-            // Right now it seems to make the animation instant instead of smooth, though.
-            if (timer.paused() || timer.finished()) && !player.is_finished() {
-                // log::debug!(
-                //     "block {ent:?} timer is inactive, current anim: ({:?}). Seeking to {:?}",
-                //     player.seek_time(),
-                //     clip.duration,
-                // );
+        // TODO: the docs claim seek_time() should always be within [0, duration]
+        // but it seems to be returning something higher here... Maybe should
+        // file a Bevy bug about it eventually
+        let cur_time = player.seek_time().clamp(0.0, clip.duration());
+        // We need to restart the animation to get it playing again, which
+        // can be done with start() or replay(). In either case, we have to seek
+        // back to the original time, since the seek time gets reset.
+        player.start(handle).seek_to(cur_time).set_speed(speed);
 
-                // player.start(clip.handle.clone()).seek_to(clip.duration);
-            }
+        log::debug!(
+            "playing at speed {speed:?} on {ent:?} current: {cur_time:.2} remaining: {duration:.2}/{:.2}",
+            clip.duration(),
+        );
 
-            continue;
-        }
-
-        log::debug!("playing anim {:?} on block {ent:?}", block.state);
-
-        let new_seek_time = (clip.duration - player.seek_time()).clamp(0.0, clip.duration);
-        player.play(clip.handle.clone()).seek_to(new_seek_time);
-
-        *timer = ToggleTimer(Timer::from_seconds(new_seek_time, TimerMode::Once));
+        timer.set_duration(Duration::from_secs_f32(duration.abs()));
+        timer.reset();
     }
 }
 
