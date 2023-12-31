@@ -139,6 +139,7 @@ fn animate_toggled_blocks(
 
         timer.set_duration(Duration::from_secs_f32(duration.abs()));
         timer.reset();
+        timer.unpause();
     }
 }
 

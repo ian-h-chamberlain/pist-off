@@ -1,9 +1,11 @@
-use bevy::prelude::*;
+use bevy::{log, prelude::*};
 
 #[cfg(not(target_family = "wasm"))]
 use bevy::app::AppExit;
 
-use crate::cubes::{Block, BlockCount, BlockState, CubeFrame, EntityGraph, ToggleEvent};
+use crate::cubes::{
+    Block, BlockCount, BlockState, CubeFrame, EntityGraph, ToggleEvent, ToggleTimer,
+};
 use crate::loading::FontAssets;
 use crate::menu::ButtonColors;
 use crate::GameState;
@@ -29,7 +31,7 @@ impl Plugin for LevelPlugin {
 }
 
 fn win_condition(
-    blocks: Query<&Block>,
+    blocks: Query<(&Block, &AnimationPlayer)>,
     mut events: EventReader<ToggleEvent>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
@@ -37,12 +39,23 @@ fn win_condition(
         return;
     }
 
-    // TODO: maybe add a slight delay? I was going to try player.is_finished()
-    // to wait until the animation is done but it seems like it doesn't work quite how I expected...
-    if blocks
-        .iter()
-        .all(|block| block.state == BlockState::InPosition)
-    {
+    if blocks.is_empty() {
+        return;
+    }
+
+    if blocks.iter().all(|(block, player)| {
+        // player.is_finished() would be nice but doesn't seem to work in reverse here.
+        // (maybe should file a bug report for ath?)
+        //
+        // < 0.01 should always work, since the player will stop animating *after* the
+        // time reaches zero, so it should normally be a little bit less than zero.
+        if block.state == BlockState::InPosition {
+            log::debug!("seek time: {:?}", player.seek_time());
+            player.seek_time() < 0.01
+        } else {
+            false
+        }
+    }) {
         next_state.set(GameState::Reset);
     }
 }

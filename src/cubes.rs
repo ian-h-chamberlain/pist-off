@@ -13,11 +13,11 @@ use crate::cubes::highlight::{HighlightableBundle, UnpickableBundle};
 use crate::loading::GLTFAssets;
 use crate::GameState;
 
-use self::activation::{ActivatePlugin, ToggleTimer};
+use self::activation::ActivatePlugin;
 use self::graph::GraphPlugin;
 use self::highlight::HighlightPlugin;
 
-pub use self::activation::ToggleEvent;
+pub use self::activation::{ToggleEvent, ToggleTimer};
 pub use self::graph::EntityGraph;
 
 pub struct CubePlugin;
@@ -81,8 +81,9 @@ struct BlockBundle {
 }
 
 /// Whether a block is in its proper place or not.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum BlockState {
+    #[default]
     OutOfPlace,
     InPosition,
 }
@@ -93,12 +94,6 @@ impl BlockState {
             Self::OutOfPlace => Self::InPosition,
             Self::InPosition => Self::OutOfPlace,
         }
-    }
-}
-
-impl Default for BlockState {
-    fn default() -> Self {
-        Self::OutOfPlace
     }
 }
 
