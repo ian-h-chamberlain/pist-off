@@ -56,7 +56,7 @@ default = [
 ]
 
 [dependencies]
-bevy = { version = "0.12.1", default-features = false }
+bevy = { version = "0.12.0", git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921", default-features = false }
 bevy_asset_loader = { version = "0.19" }
 rand = { version = "0.8.3" }
 bevy_mod_outline = "0.6.0"
@@ -76,6 +76,45 @@ features = [
     "highlight",
     "selection",
 ]
+
+[patch.crates-io]
+# Potential fix for https://github.com/bevyengine/bevy/issues/10832.
+# It's not merged upstream yet, but we have simple animations so hopefully doesn't matter if the fix is incomplete.
+bevy_animation = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+
+# Ugh... https://bevy-cheatbook.github.io/setup/bevy-git.html?highlight=main#cargo-patches
+bevy = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_a11y = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_app = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_asset = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_asset_macros = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_core = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_core_pipeline = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_derive = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_ecs = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_ecs_macros = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_encase_derive = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_gizmos = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_hierarchy = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_input = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_log = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_macro_utils = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_math = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_mikktspace = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_pbr = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_ptr = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_reflect = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_reflect_derive = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_render = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_render_macros = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_sprite = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_tasks = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_time = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_transform = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_ui = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_utils = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_utils_proc_macros = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
+bevy_window = { git = "https://github.com/ian-h-chamberlain/bevy.git", rev = "7b1ba110fc34bcb1274d88d51f83a7e997f13921" }
 
 # inline_tweak uses std::time and probably wouldn't work on wasm anyway. Just
 # define the tweak macro as a transparent passthrough on wasm
