@@ -1,111 +1,11 @@
-<!DOCTYPE html><html lang="en"><head>
-        <meta charset="utf-8">
-        <title>Pist Off</title>
-        
-        
-        
-        <link rel="icon" href="icon.ico">
-        <style type="text/css">body, html {
-    height: 100%;
-}
-
-body {
-    background: repeating-radial-gradient(
+<!doctype html><html lang=en><meta charset=utf-8><title>Pist Off</title><link href=icon.ico rel=icon><style>body,html{height:100%}body{background:repeating-radial-gradient(
         circle at 50% 50%,
             #444,
             #666
             45px
-    );
-    margin: 0;
-}
+    );margin:0}.game-container{width:100%;height:100%;display:flex;justify-content:center;align-items:center}#bevy{background-color:white;width:800px;height:600px;border:solid 10px rgb(74,49,33)}</style><link as=fetch crossorigin href=/pist-off/pist-off-45fc0cef43245cbadf168abf22a2087cb20499d2012a5c11a36cfbc50f1393518a5af0b2765d687699c69909967a3eb2_bg.wasm integrity=sha384-RfwM70MkXLrfFoq_IqIIfLIEmdIBKlwRo2z7xQ8Tk1GKWvCydl1odpnGmQmWej6y rel=preload type=application/wasm><link crossorigin href=/pist-off/pist-off-45fc0cef43245cbadf168abf22a2087cb20499d2012a5c11a36cfbc50f1393518a5af0b2765d687699c69909967a3eb2.js integrity=sha384-XTrZQZXA8DW-rhdZn1Sf-dusHNZ9RRyrT-7dFLNq7MuS1GZFQFwIY-bYWkXeFNrK rel=modulepreload></head><body><script>(function(){const d=[];const e=["click","contextmenu","auxclick","dblclick","mousedown","mouseup","pointerup","touchend","keydown","keyup"];self.AudioContext=new Proxy(self.AudioContext,{construct(a,b){const f=new a(...b);d.push(f);return f}});function c(f){let g=0;d.forEach(h=>{if(h.state!=="running"){h.resume()}else{g++}});if(g>0&&g===d.length){e.forEach(h=>{document.removeEventListener(h,c)})}}e.forEach(f=>{document.addEventListener(f,c)})})()</script><div class=game-container><canvas id=bevy>Javascript and support for canvas is required</canvas></div><script type=module>
+import init, * as bindings from '/pist-off/pist-off-45fc0cef43245cbadf168abf22a2087cb20499d2012a5c11a36cfbc50f1393518a5af0b2765d687699c69909967a3eb2.js';
+init('/pist-off/pist-off-45fc0cef43245cbadf168abf22a2087cb20499d2012a5c11a36cfbc50f1393518a5af0b2765d687699c69909967a3eb2_bg.wasm');
+window.wasmBindings = bindings;
 
-.game-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#bevy {
-    background-color: white;
-    width: 800px;
-    height: 600px;
-    border: solid 10px rgb(74, 49, 33);
-}
-</style>
-    
-<link rel="preload" href="/pist-off/pist-off-75f9403bcd5fd381_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/pist-off/pist-off-75f9403bcd5fd381.js"></head>
-    <body>
-        <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
-// https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
-
-// the following function keeps track of all AudioContexts and resumes them on the first user
-// interaction with the page. If the function is called and all contexts are already running,
-// it will remove itself from all event listeners.
-(function () {
-    // An array of all contexts to resume on the page
-    const audioContextList = [];
-
-    // An array of various user interaction events we should listen for
-    const userInputEventNames = [
-        "click",
-        "contextmenu",
-        "auxclick",
-        "dblclick",
-        "mousedown",
-        "mouseup",
-        "pointerup",
-        "touchend",
-        "keydown",
-        "keyup",
-    ];
-
-    // A proxy object to intercept AudioContexts and
-    // add them to the array for tracking and resuming later
-    self.AudioContext = new Proxy(self.AudioContext, {
-        construct(target, args) {
-            const result = new target(...args);
-            audioContextList.push(result);
-            return result;
-        },
-    });
-
-    // To resume all AudioContexts being tracked
-    function resumeAllContexts(_event) {
-        let count = 0;
-
-        audioContextList.forEach((context) => {
-            if (context.state !== "running") {
-                context.resume();
-            } else {
-                count++;
-            }
-        });
-
-        // If all the AudioContexts have now resumed then we unbind all
-        // the event listeners from the page to prevent unnecessary resume attempts
-        // Checking count > 0 ensures that the user interaction happens AFTER the game started up
-        if (count > 0 && count === audioContextList.length) {
-            userInputEventNames.forEach((eventName) => {
-                document.removeEventListener(eventName, resumeAllContexts);
-            });
-        }
-    }
-
-    // We bind the resume function for each user interaction
-    // event on the page
-    userInputEventNames.forEach((eventName) => {
-        document.addEventListener(eventName, resumeAllContexts);
-    });
-})();
-</script>
-        <div class="game-container">
-            <canvas id="bevy">
-                Javascript and support for canvas is required
-            </canvas>
-        </div>
-    
-
-<script type="module">import init from '/pist-off/pist-off-75f9403bcd5fd381.js';init('/pist-off/pist-off-75f9403bcd5fd381_bg.wasm');</script></body></html>
+</script></body></html>
